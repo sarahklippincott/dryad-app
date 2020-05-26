@@ -29,8 +29,6 @@ module StashApi
       id_size_hsh = id_and_size_hash
       metadata = id_size_hsh.merge(lv.metadata)
       add_embargo_date!(metadata, lv)
-      add_curation_status(metadata)
-      # metadata.compact!
 
       # gives the links to nearby objects
       { '_links': links }.merge(metadata).recursive_compact
@@ -72,12 +70,13 @@ module StashApi
 
     private
 
-    # a simple identifier without any versions, shouldn't be happening but it did on dev at least
+    # a simple identifier without any versions, indicates that we created
+    # an identifier that cannot be viewed
     def simple_identifier
       {
         identifier: @se_identifier.to_s,
         id: @se_identifier.id,
-        message: 'identifier is missing required elements'
+        message: 'identifier cannot be viewed, may be missing required elements'
       }
     end
 
@@ -91,13 +90,6 @@ module StashApi
 
     def add_embargo_date!(hsh, version)
       hsh[:embargoEndDate] = version.resource.publication_date.strftime('%Y-%m-%d') unless version.resource.publication_date.nil?
-    end
-
-    def add_curation_status(hsh)
-      res = @se_identifier.latest_resource
-      curation_activity = StashEngine::CurationActivity.latest(res&.id)
-      hsh[:curationStatus] = curation_activity&.readable_status
-      hsh[:sharingLink] = res&.identifier&.shares&.first&.sharing_link if curation_activity&.peer_review?
     end
 
   end

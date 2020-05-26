@@ -4,11 +4,6 @@ require 'byebug'
 module StashApi
   RSpec.describe DatasetParser do
     before(:each) do
-      # app = double(Rails::Application)
-      # allow(app).to receive(:stash_mount).and_return('/api/v2')
-      # TODO: We need to figure out how to load the other engines without errors (spec_helper probably)
-      # allow(StashEngine).to receive(:app).and_return(app)
-
       @tenants = StashEngine.tenants
       StashEngine.tenants = begin
         tenants = HashWithIndifferentAccess.new
@@ -40,12 +35,16 @@ module StashApi
             'firstName' => 'Wanda',
             'lastName' => 'Jackson',
             'email' => 'wanda.jackson@example.com',
+            'orcid' => '0000-1111-2222-3333',
             'affiliation' => 'University of the Example'
           }
         ],
         'abstract' =>
               'Cyberneticists agree that concurrent models are an interesting new topic in the field of machine learning.',
         'userId' => @user2.id,
+        'publicationISSN' => '0000-1111',
+        'publicationName' => 'Some Great Journal',
+        'manuscriptNumber' => 'ABC123',
         'paymentId' => 'invoice-123',
         'paymentType' => 'stripe'
       }.with_indifferent_access
@@ -69,12 +68,11 @@ module StashApi
       allow(repo).to receive(:mint_id).and_return('doi:12345/67890')
       allow(StashEngine).to receive(:repository).and_return(repo)
 
+      allow(Stash::Organization::Ror).to receive(:find_by_ror_id).and_return(nil)
+      allow(Stash::Organization::Ror).to receive(:find_first_by_ror_name).and_return(nil)
+
       dp = DatasetParser.new(hash: @basic_metadata, id: nil, user: @user)
       @stash_identifier = dp.parse
-
-      allow_any_instance_of(Stash::Organization::Ror).to receive(:find_first_by_ror_name).and_return(
-        id: 'abcd', name: 'Test Ror Organization'
-      )
     end
 
     describe :parses_basics do
@@ -89,29 +87,27 @@ module StashApi
         expect(resource.title).to eq(@basic_metadata[:title])
       end
 
-      it 'creates the author as specified' do
+      it 'creates the basic author metadata as specified' do
         resource = @stash_identifier.resources.first
         expect(resource.authors.count).to eq(1)
         author = resource.authors.first
         expect(author.author_first_name).to eq(@basic_metadata[:authors].first['firstName'])
         expect(author.author_last_name).to eq(@basic_metadata[:authors].first['lastName'])
         expect(author.author_email).to eq(@basic_metadata[:authors].first['email'])
+        expect(author.author_orcid).to eq(@basic_metadata[:authors].first['orcid'])
+        # Since default affiliation doesn't match ROR, it should have an asterisk appended
+        expect(author.affiliation.long_name).to eq("#{@basic_metadata[:authors].first['affiliation']}*")
       end
 
       it 'allows bad (not blank, but invalid) emails' do
         @basic_metadata = {
-          'title' => 'Visualizing Congestion Control Using Self-Learning Epistemologies',
           'authors' => [
             {
               'firstName' => 'Wanda',
               'lastName' => 'Jackson',
-              'email' => 'grog-to-drink',
-              'affiliation' => 'never'
+              'email' => 'grog-to-drink'
             }
-          ],
-          'abstract' =>
-                'Cyberneticists agree that concurrent models are an interesting new topic in the field of machine learning.',
-          'userId' => @user2.id
+          ]
         }.with_indifferent_access
 
         dp = DatasetParser.new(hash: @basic_metadata, id: nil, user: @user)
@@ -123,6 +119,107 @@ module StashApi
         expect(author.author_email).to eq(@basic_metadata[:authors].first['email'])
       end
 
+      it 'creates the author with a ROR id, matching to an existing affiliation in the database' do
+        target_affil = StashDatacite::Affiliation.create(long_name: 'Some Great Institution', ror_id: 'https://ror.org/sgi123')
+        @basic_metadata = {
+          'authors' => [
+            {
+              'firstName' => 'Wanda',
+              'lastName' => 'Jackson',
+              'affiliationROR' => 'https://ror.org/sgi123'
+            }
+          ]
+        }.with_indifferent_access
+        dp = DatasetParser.new(hash: @basic_metadata, id: nil, user: @user)
+        @stash_identifier = dp.parse
+        resource = @stash_identifier.resources.first
+        author = resource.authors.first
+
+        expect(author.affiliation.id).to eq(target_affil.id)
+      end
+
+      it 'creates the author with a ROR id, matching to an existing affiliation in the ROR system' do
+        allow(Stash::Organization::Ror).to receive(:find_by_ror_id).and_return({ id: 'https://ror.org/abc123',
+                                                                                 name: 'Test Ror Organization' }.to_ostruct)
+        @basic_metadata = {
+          'authors' => [
+            {
+              'firstName' => 'Wanda',
+              'lastName' => 'Jackson',
+              'affiliationROR' => 'https://ror.org/abc123'
+            }
+          ]
+        }.with_indifferent_access
+        dp = DatasetParser.new(hash: @basic_metadata, id: nil, user: @user)
+        @stash_identifier = dp.parse
+        resource = @stash_identifier.resources.first
+        author = resource.authors.first
+
+        expect(author.affiliation.long_name).to eq('Test Ror Organization')
+      end
+
+      it 'creates the author with an ISNI id, matching to an existing affiliation in the ROR system' do
+        allow(Stash::Organization::Ror).to receive(:find_by_isni_id).and_return({ id: 'https://ror.org/abc1234',
+                                                                                  name: 'Test Ror ISNI Organization' }.to_ostruct)
+        allow(Stash::Organization::Ror).to receive(:find_by_ror_id).and_return({ id: 'https://ror.org/abc1234',
+                                                                                 name: 'Test Ror ISNI Organization' }.to_ostruct)
+        @basic_metadata = {
+          'authors' => [
+            {
+              'firstName' => 'Wanda',
+              'lastName' => 'Jackson',
+              'affiliationISNI' => '0000 0001 1957 5136',
+              'affiliation' => 'abcaaaaa'
+            }
+          ]
+        }.with_indifferent_access
+        dp = DatasetParser.new(hash: @basic_metadata, id: nil, user: @user)
+        @stash_identifier = dp.parse
+        resource = @stash_identifier.resources.first
+        author = resource.authors.first
+        expect(author.affiliation.long_name).to eq('Test Ror ISNI Organization')
+      end
+
+      it 'creates the author with an affiliation whose name matches an existing affiliation in the database' do
+        target_affil = StashDatacite::Affiliation.create(long_name: 'Some Great Institution', ror_id: 'https://ror.org/sgi123')
+        @basic_metadata = {
+          'authors' => [
+            {
+              'firstName' => 'Wanda',
+              'lastName' => 'Jackson',
+              'affiliation' => 'Some Great Institution'
+            }
+          ]
+        }.with_indifferent_access
+        dp = DatasetParser.new(hash: @basic_metadata, id: nil, user: @user)
+        @stash_identifier = dp.parse
+        resource = @stash_identifier.resources.first
+        author = resource.authors.first
+
+        expect(author.affiliation.id).to eq(target_affil.id)
+      end
+
+      it 'creates the author with an affiliation whose name matches an existing entry in the ROR system' do
+        allow(Stash::Organization::Ror).to receive(:find_first_by_ror_name).and_return({ id: 'https://ror.org/abc123',
+                                                                                         name: 'Test Ror Organization' }.to_ostruct)
+
+        @basic_metadata = {
+          'authors' => [
+            {
+              'firstName' => 'Wanda',
+              'lastName' => 'Jackson',
+              'affiliation' => 'Test Ror Organization'
+            }
+          ]
+        }.with_indifferent_access
+        dp = DatasetParser.new(hash: @basic_metadata, id: nil, user: @user)
+        @stash_identifier = dp.parse
+        resource = @stash_identifier.resources.first
+        author = resource.authors.first
+
+        expect(author.affiliation.ror_id).to eq('https://ror.org/abc123')
+      end
+
       it 'creates the abstract' do
         resource = @stash_identifier.resources.first
         des = resource.descriptions.first
@@ -130,16 +227,103 @@ module StashApi
         expect(des.description_type).to eq('abstract')
       end
 
-      it 'sets the owner' do
-        resource = @stash_identifier.resources.first
-        expect(resource.user_id). to eq(@user2.id)
-        expect(resource.current_editor_id).to eq(@user2.id)
+      it 'creates internal data for the publication metadata' do
+        expect(@stash_identifier.publication_issn).to eq('0000-1111')
+        expect(@stash_identifier.publication_name).to eq('Some Great Journal')
+        expect(@stash_identifier.manuscript_number).to eq('ABC123')
       end
 
       it 'puts the paymentId on the identifier' do
         expect(@stash_identifier.payment_id). to eq('invoice-123')
         expect(@stash_identifier.payment_type). to eq('stripe')
       end
+    end
+
+    describe 'dataset ownership' do
+      it 'sets the owner' do
+        resource = @stash_identifier.resources.first
+        expect(resource.user_id).to eq(@user2.id)
+        expect(resource.current_editor_id).to eq(@user2.id)
+      end
+
+      it 'sets the owner to an existing user from an ORCID' do
+        test_user = StashEngine::User.create(first_name: 'Lena',
+                                             last_name: 'Jarre',
+                                             email: 'lj123@ucop.edu',
+                                             orcid: '1234-5678-0000-1111')
+        test_metadata = {
+          'title' => 'Visualizing Congestion Control Using Self-Learning Epistemologies',
+          'authors' => [{
+            'firstName' => 'Wanda',
+            'lastName' => 'Jackson',
+            'email' => 'wanda.jackson@example.com'
+          }],
+          'abstract' => 'Cyberneticists agree that concurrent models are fun.',
+          'userId' => test_user.orcid
+        }.with_indifferent_access
+
+        dp = DatasetParser.new(hash: test_metadata, id: nil, user: @user)
+        test_identifier = dp.parse
+
+        resource = test_identifier.resources.first
+        expect(resource.user_id).to eq(test_user.id)
+      end
+
+      it 'sets the owner to user specified in the metadata with an ORCID' do
+        test_orcid = '0000-1111-2222-3333'
+        test_metadata = {
+          'title' => 'Visualizing Congestion Control Using Self-Learning Epistemologies',
+          'authors' => [{
+            'firstName' => 'Wanda',
+            'lastName' => 'Jackson',
+            'email' => 'wanda.jackson@example.com',
+            'orcid' => test_orcid
+          }],
+          'abstract' => 'Cyberneticists agree that concurrent models are fun.',
+          'userId' => test_orcid
+        }.with_indifferent_access
+
+        dp = DatasetParser.new(hash: test_metadata, id: nil, user: @user)
+        test_identifier = dp.parse
+        resource = test_identifier.resources.first
+        expect(resource.user.first_name).to eq('Wanda')
+      end
+
+      it 'defaults ownership to the submitter when the userId is invalid' do
+        test_metadata = {
+          'title' => 'Visualizing Congestion Control Using Self-Learning Epistemologies',
+          'authors' => [{
+            'firstName' => 'Wanda',
+            'lastName' => 'Jackson',
+            'email' => 'wanda.jackson@example.com'
+          }],
+          'abstract' => 'Cyberneticists agree that concurrent models are fun.',
+          'userId' => 'BOGUS-junk'
+        }.with_indifferent_access
+
+        dp = DatasetParser.new(hash: test_metadata, id: nil, user: @user)
+        test_identifier = dp.parse
+        resource = test_identifier.resources.first
+        expect(resource.user).to eq(@user)
+      end
+
+      it 'errors when the userId is an ORCID, but does not match one set in the author list' do
+        test_metadata = {
+          'title' => 'Visualizing Congestion Control Using Self-Learning Epistemologies',
+          'authors' => [{
+            'firstName' => 'Wanda',
+            'lastName' => 'Jackson',
+            'email' => 'wanda.jackson@example.com',
+            'orcid' => '4444-4444-4444-4444'
+          }],
+          'abstract' => 'Cyberneticists agree that concurrent models are fun.',
+          'userId' => '5555-5555-5555-5555'
+        }.with_indifferent_access
+
+        dp = DatasetParser.new(hash: test_metadata, id: nil, user: @user)
+        expect { dp.parse }.to raise_error(RuntimeError)
+      end
+
     end
 
     describe 'identifier handling' do

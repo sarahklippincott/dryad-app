@@ -4,6 +4,7 @@ require 'stash/zenodo_replicate'
 require 'byebug'
 require 'http'
 require 'fileutils'
+require 'cgi'
 
 require 'rails_helper'
 
@@ -15,9 +16,27 @@ module Stash
 
       before(:each) do
         @resource = create(:resource)
-        @mg = Stash::ZenodoReplicate::MetadataGenerator.new(resource: @resource)
+        4.times do
+          place = create(:geolocation_place)
+          point = create(:geolocation_point)
+          box = create(:geolocation_box)
+          create(:geolocation, place_id: place.id, point_id: point.id, box_id: box.id, resource_id: @resource.id)
+        end
+        @g = @resource.geolocations
+        @g[0].update(point_id: nil, box_id: nil) # remove point and box
+        @g[1].update(place_id: nil, box_id: nil) # remove place and box
+        @g[2].update(place_id: nil, point_id: nil) # remove place and point
+        # g[3] has all 3
+
         create(:description, description_type: 'other', resource_id: @resource.id)
         create(:description, description_type: 'methods', resource_id: @resource.id)
+
+        @funder1 = create(:contributor, resource_id: @resource.id)
+        @funder2 = create(:contributor, resource_id: @resource.id, award_number: nil)
+
+        @resource.reload
+
+        @mg = Stash::ZenodoReplicate::MetadataGenerator.new(resource: @resource)
       end
 
       it 'has doi output' do
@@ -65,16 +84,37 @@ module Stash
       end
 
       it 'has notes output' do
-        expect(@mg.notes).to eq(@resource.descriptions.where(description_type: 'other').first.description)
+        expect(@mg.notes).to include(@resource.descriptions.where(description_type: 'other').first.description)
       end
 
-      it 'has related_identifiers output for itself' do
-        expect(@mg.related_identifiers).to eq([{ relation: 'isIdenticalTo',
-                                                 identifier: "https://doi.org/#{@resource.identifier.identifier}" }])
+      it 'puts funder information into notes' do
+        expect(@mg.notes).to include(CGI.escapeHTML("Funding provided by: #{@funder1.contributor_name}"))
+        expect(@mg.notes).to include(CGI.escapeHTML("Crossref Funder Registry ID: #{@funder1.name_identifier_id}"))
+        expect(@mg.notes).to include(CGI.escapeHTML("Award Number: #{@funder1.award_number}"))
+        expect(@mg.notes).to include(CGI.escapeHTML("Funding provided by: #{@funder2.contributor_name}"))
+        expect(@mg.notes).to include(CGI.escapeHTML("Crossref Funder Registry ID: #{@funder2.name_identifier_id}"))
+        expect(@mg.notes.scan(/Award Number/).count).to eq(1)
+      end
+
+      it 'sets an item to the community' do
+        expect(@mg.communities).to eq([{ identifier: APP_CONFIG.zenodo.community_id }])
       end
 
       it 'has method output' do
         expect(@mg.method).to eq(@resource.descriptions.where(description_type: 'methods').first.description)
+      end
+
+      it 'has geolocation point output' do
+        expect(@mg.locations[1]).to eq('lat' => @g[1].geolocation_point.latitude, 'lon' => @g[1].geolocation_point.longitude)
+      end
+
+      it 'has geolocation place' do
+        expect(@mg.locations[0]).to eq('place' => @g[0].geolocation_place.geo_location_place)
+      end
+
+      it 'has both point and place' do
+        expect(@mg.locations[2]).to eq('lat' => @g[3].geolocation_point.latitude, 'lon' => @g[3].geolocation_point.longitude,
+                                       'place' => @g[3].geolocation_place.geo_location_place)
       end
     end
   end
