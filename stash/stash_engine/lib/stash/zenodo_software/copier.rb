@@ -57,6 +57,8 @@ module Stash
         @resp = {}
         @resource = StashEngine::Resource.find(@copy.resource_id)
         @file_collection = FileCollection.new(resource: @resource)
+        # I was creating this later, but it can be created earlier and eases testing if so
+        @deposit = Stash::ZenodoReplicate::Deposit.new(resource: @resource)
       end
 
       # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
@@ -73,7 +75,6 @@ module Stash
         @copy.update(state: 'replicating')
         @copy.increment!(:retries)
 
-        @deposit = Stash::ZenodoReplicate::Deposit.new(resource: @resource)
         @resp = if @previous_copy
                   @deposit.get_by_deposition(deposition_id: @previous_copy.deposition_id)
                 else
@@ -126,10 +127,12 @@ module Stash
       # no files are changing, but a previous version should always exist
       def metadata_only_update
         if @resp[:state] == 'done'
-          # don't reopen for file changes and just update status
+          # don't reopen for metadata changes and just update status
+          # because metadata is only updated to public on publishing or if the version is unpublished and public won't see changes.
           @copy.update(state: 'finished',
-                       error_info: "Warning: metadata wasn't updated because the dataset is closed for editing since "\
-                          'creating new versions for metadata-only changes is not allowed in Zenodo.')
+                       error_info: "Warning: metadata wasn't updated because the last version was published, "\
+                          "versioning of metadata-only changes isn't allowed in zenodo and the public should " \
+                          'only see published metadata changes.')
           return
         end
         @deposit.update_metadata(software_upload: true, doi: @copy.software_doi)
@@ -155,8 +158,9 @@ module Stash
       end
 
       def error_if_more_than_one_replication_for_resource
+        # this also catches an error if something is trying to publish that hasn't had a software-type submission yet for this resource
         return if @resource.zenodo_copies.where(copy_type: 'software').count == 1 # can have software and software_publish for same resource
-        raise ZE, "resource_id #{@resource.id}: Only one replication of the same type (software or data) is allowed per resource."
+        raise ZE, "resource_id #{@resource.id}: Exactly one replication of the same type (software or data) is allowed per resource."
       end
 
       def files_changed?
