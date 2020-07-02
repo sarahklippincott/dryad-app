@@ -4,7 +4,7 @@ require File.join(File.dirname(__FILE__), 'lib', 'bundler_help.rb')
 # ############################################################
 # Rails
 
-gem 'mysql2', '~> 0.4.10'
+gem 'mysql2', '~> 0.5.3'
 gem 'rails', '4.2.11'
 gem 'rb-readline'
 
@@ -27,13 +27,13 @@ gem 'capistrano', '~> 3.11'
 gem 'capistrano-passenger'
 gem 'capistrano-rails', '~> 1.4'
 gem 'passenger', '~> 6.0.4'
-gem 'rubocop', '~> 0.57.2'
+gem 'rubocop', '~> 0.85.1'
 
 # ############################################################
 # UI
 
 # TODO: why do we have uglifier AND yui-compressor?
-# asset pipeline problems with Joel's pre-minified CSS/JS caused errors with uglifier and had to revert to yui-compressor
+# asset pipeline problems with Joels pre-minified CSS/JS caused errors with uglifier and had to revert to yui-compressor
 
 gem 'coffee-rails', '~> 4.1.0'
 gem 'jquery-rails'
@@ -67,6 +67,8 @@ group :development, :local_dev do
 end
 
 group :test do
+  # passenger doesn't work with tests with capybara, but puma does. and I believe is a better alternative than webrick and is a bit faster
+  gem 'puma'
   # Capybara aims to simplify the process of integration testing Rack applications, such as Rails, Sinatra or Merb (https://github.com/teamcapybara/capybara)
   gem 'capybara'
   # Automatically create snapshots when Cucumber steps fail with Capybara and Rails (http://github.com/mattheworiordan/capybara-screenshot)
@@ -104,6 +106,11 @@ group :test do
   gem 'simplecov', require: false
   # used by some of the engines and for some reason causes errors without it in the main Gemfile, also.
   gem 'simplecov-console', require: false
+  # Rails application preloader (https://github.com/rails/spring)
+  # gem 'spring'
+  # rspec command for spring (https://github.com/jonleighton/spring-commands-rspec)
+  # gem 'spring-commands-rspec'
+  # Library for stubbing HTTP requests in Ruby. (http://github.com/bblimke/webmock)
   gem 'webmock'
 end
 
@@ -114,10 +121,4 @@ group :development, :test, :local_dev do
   gem 'pry'
   gem 'pry-rails'
   gem 'pry-remote', require: 'pry-remote'
-  gem 'puma'
-  # Rails application preloader (https://github.com/rails/spring), says not to install in production
-  gem 'spring'
-  # rspec command for spring (https://github.com/jonleighton/spring-commands-rspec)
-  gem 'spring-commands-rspec'
-  # Library for stubbing HTTP requests in Ruby. (http://github.com/bblimke/webmock)
 end
