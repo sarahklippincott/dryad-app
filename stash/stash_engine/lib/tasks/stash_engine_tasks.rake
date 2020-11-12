@@ -269,6 +269,24 @@ namespace :identifiers do
     exit
   end
 
+  desc 'Validate dataset content'
+  task validate_datasets: :environment do
+    # Reads a CSV file with the DOI in column 1 and the number of files in column 8
+    # Validates that we can get a presigned URL from Merritt to download the same number of files
+    # Otherwise, outputs a warning so the dataset can be manually validated
+
+    # read file, for each DOI
+    filename = '/tmp/dataPackageStats.txt'
+    table = CSV.parse(File.read(filename), headers: true, liberal_parsing: true)
+    table.each do |row|
+      doi = row[1].match(/dryad.\w*/)
+      num_files = row[8]
+      puts "XXXXX #{doi}, #{num_files} "
+      i = StashEngine::Identifier.where("identifier like \'%#{doi}\'").first
+      puts "   #{i.last_submitted_resource.file_uploads.size}"
+    end
+  end
+
   desc 'populate payment info'
   task load_payment_info: :environment do
     p 'Populating payment information for published/embargoed items'
