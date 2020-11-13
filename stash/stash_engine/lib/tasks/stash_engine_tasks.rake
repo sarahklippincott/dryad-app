@@ -293,10 +293,10 @@ namespace :identifiers do
       else
         puts "\nERR File mismatch #{doi}, #{num_files_expected}, #{files_actual.size} "
       end
-    rescue => e
+    rescue StandardError => e
       puts "\nERR exception processing #{doi} #{e.message}"
     end
-    puts "."
+    puts '.'
   end
 
   desc 'populate payment info'
