@@ -279,12 +279,24 @@ namespace :identifiers do
     filename = '/tmp/dataPackageStats.txt'
     table = CSV.parse(File.read(filename), headers: true, liberal_parsing: true)
     table.each do |row|
+      print '.'
       doi = row[1].match(/dryad.\w*/)
-      num_files = row[8]
-      puts "XXXXX #{doi}, #{num_files} "
+      num_files_expected = row[8].to_i
       i = StashEngine::Identifier.where("identifier like \'%#{doi}\'").first
-      puts "   #{i.last_submitted_resource.file_uploads.size}"
+      files_actual = i.last_submitted_resource.file_uploads.present_files
+      if files_actual.size >= num_files_expected
+        files_actual.each do |f|
+          # can we get a merritt presigned URL for all of them?
+          url = f.s3_presigned_url
+          puts "\nERR unable to get presigned url for #{doi} #{f.upload_file_name}" unless url
+        end
+      else
+        puts "\nERR File mismatch #{doi}, #{num_files_expected}, #{files_actual.size} "
+      end
+    rescue => e
+      puts "\nERR exception processing #{doi} #{e.message}"
     end
+    puts "."
   end
 
   desc 'populate payment info'
