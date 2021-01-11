@@ -20,6 +20,6 @@ local:
 test:
   <<: *default
   host: localhost
-  database: dashv2_test
+  database: dryad_test
   username: root
   password: root
