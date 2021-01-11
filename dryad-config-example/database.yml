@@ -22,4 +22,4 @@ test:
   host: localhost
   database: dashv2_test
   username: root
-  password: ""
+  password: root
