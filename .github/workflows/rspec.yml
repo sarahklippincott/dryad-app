@@ -72,7 +72,7 @@ jobs:
 
     - name: 'Compile Assets'
       run: |
-        bin/rails webpacker:compile
+#        bin/rails webpacker:compile
         bin/rails assets:precompile
 
     - name: 'Run RSpec Tests'
