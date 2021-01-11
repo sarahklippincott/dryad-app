@@ -21,5 +21,5 @@ test:
   <<: *default
   host: localhost
   database: dashv2_test
-  username: travis
+  username: root
   password: ""
