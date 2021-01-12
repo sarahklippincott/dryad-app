@@ -23,5 +23,5 @@ test:
   database: dryad_test
 #  username: travis
 #  password: ""
-   username: root
-   password: root
+  username: root
+  password: root
