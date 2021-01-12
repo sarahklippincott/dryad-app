@@ -65,3 +65,4 @@ jobs:
         bin/bundle exec rspec spec/models
         bin/bundle exec rspec spec/services
         bin/bundle exec rspec spec/tasks
+        bin/bundle exec rspec stash/stash-notifier/spec/
