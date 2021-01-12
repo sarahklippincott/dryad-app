@@ -75,10 +75,10 @@ sudo mysql -u root
 CREATE DATABASE dryad CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 # add a user to the database
-CREATE USER 'travis'@'%';
+CREATE USER 'tester'@'%';
 
 # grant the user privileges
-GRANT ALL PRIVILEGES ON dryad . * TO 'travis'@'%';
+GRANT ALL PRIVILEGES ON dryad . * TO 'tester'@'%';
 FLUSH PRIVILEGES;
 
 # To exit the MySQL client, type *exit* or press ctrl-d
