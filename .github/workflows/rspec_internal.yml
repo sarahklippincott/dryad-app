@@ -65,7 +65,7 @@ jobs:
       run: bin/bundle exec rspec --force-color spec/jobs
 
     - name: 'RSpec Model Tests'
-      run: bin/bundle exec rspec --force-color spec/models
+      run: bin/bundle exec rspec --force-color --format RSpec::Github::Formatter spec/models
 
     - name: 'RSpec Service Tests'
       run: bin/bundle exec rspec --force-color spec/services
