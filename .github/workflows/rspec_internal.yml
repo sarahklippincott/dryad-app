@@ -65,7 +65,7 @@ jobs:
       run: bin/bundle exec rspec --force-color --format RSpec::Github::Formatter --tag ~skip spec/jobs
 
     - name: 'RSpec Model Tests'
-      run: bin/bundle exec rspec --force-color --format RSpec::Github::Formatter --tag ~skip spec/models
+      run: bin/bundle exec rspec --force-color --format RSpec::Github::Formatter --format progress --tag ~skip spec/models
 
     - name: 'RSpec Service Tests'
       run: bin/bundle exec rspec --force-color --format RSpec::Github::Formatter --format progress --tag ~skip spec/services
