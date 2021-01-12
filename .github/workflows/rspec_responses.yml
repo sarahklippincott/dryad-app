@@ -11,7 +11,6 @@ jobs:
       DB_ADAPTER: mysql2
       MYSQL_PWD: root
       RAILS_ENV: test
-      FORCE_COLOR: "1"
 
     steps:
     - name: 'Checkout the repo'

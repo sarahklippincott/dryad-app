@@ -59,19 +59,19 @@ jobs:
         bin/rails db:setup RAILS_ENV=test
 
     - name: 'RSpec Controller Tests'
-      run: bin/bundle exec rspec spec/controllers
+      run: bin/bundle exec rspec --force-color spec/controllers
 
     - name: 'RSpec Job Tests'
-      run: bin/bundle exec rspec spec/jobs
+      run: bin/bundle exec rspec --force-color spec/jobs
 
     - name: 'RSpec Model Tests'
-      run: bin/bundle exec rspec spec/models
+      run: bin/bundle exec rspec --force-color spec/models
 
     - name: 'RSpec Service Tests'
-      run: bin/bundle exec rspec spec/services
+      run: bin/bundle exec rspec --force-color spec/services
 
     - name: 'RSpec Task Tests'
-      run: bin/bundle exec rspec spec/tasks
+      run: bin/bundle exec rspec --force-color spec/tasks
 
     - name: 'RSpec Stash-Notifier Tests'
-      run: bin/bundle exec rspec stash/stash-notifier/spec/
+      run: bin/bundle exec rspec --force-color stash/stash-notifier/spec/
