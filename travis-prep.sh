@@ -15,6 +15,6 @@ set -e
 
 echo "Initializing database:"
 set -x
-mysql -u root -e 'CREATE DATABASE IF NOT EXISTS dashv2_test'
-mysql -u root -e 'GRANT ALL ON dashv2_test.* TO travis@localhost'
+mysql -u root -e 'CREATE DATABASE IF NOT EXISTS dryad_test'
+mysql -u root -e 'GRANT ALL ON dryad_test.* TO travis@localhost'
 { set +x; } 2>/dev/null

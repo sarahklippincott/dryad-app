@@ -21,5 +21,7 @@ test:
   <<: *default
   host: localhost
   database: dryad_test
-  username: root
-  password: root
+#  username: travis
+#  password: ""
+   username: root
+   password: root
