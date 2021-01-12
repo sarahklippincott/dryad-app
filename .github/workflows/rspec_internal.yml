@@ -68,10 +68,10 @@ jobs:
       run: bin/bundle exec rspec --force-color --format RSpec::Github::Formatter --tag ~skip spec/models
 
     - name: 'RSpec Service Tests'
-      run: bin/bundle exec rspec --force-color --format RSpec::Github::Formatter --tag ~skip spec/services
+      run: bin/bundle exec rspec --force-color --format RSpec::Github::Formatter --format progress --tag ~skip spec/services
 
     - name: 'RSpec Task Tests'
-      run: bin/bundle exec rspec --force-color --format RSpec::Github::Formatter --tag ~skip spec/tasks
+      run: bin/bundle exec rspec --force-color --format RSpec::Github::Formatter --format progress --tag ~skip spec/tasks
 
     - name: 'RSpec Stash-Notifier Tests'
       run: bin/bundle exec rspec --force-color --format RSpec::Github::Formatter --tag ~skip stash/stash-notifier/spec/
