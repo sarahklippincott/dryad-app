@@ -14,12 +14,12 @@ development: &DEVELOPMENT
 
 local:
   <<: *default
-  username: tester
+  username: travis
   password: ""
 
 test:
   <<: *default
   host: localhost
-  database: dryad_test
-  username: tester
+  database: dashv2_test
+  username: travis
   password: ""
