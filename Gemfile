@@ -12,12 +12,12 @@ gem 'rb-readline', '~> 0.5.5', require: false
 # Local engines
 
 path 'stash' do
-  gem 'stash_api'
-  gem 'stash_datacite'
-  gem 'stash_discovery'
-  gem 'stash_engine'
+  gem 'stash_api', '~> 0.0', '>= 0.0.1'
+  gem 'stash_datacite', '~> 0.0', '>= 0.0.5'
+  gem 'stash_discovery', '~> 0.0', '>= 0.0.2'
+  gem 'stash_engine', '~> 0.0', '>= 0.0.17'
   # needs engines to load first
-  gem 'stash-merritt'
+  gem 'stash-merritt', '~> 0.2', '>= 0.2.1'
 end
 
 # ############################################################

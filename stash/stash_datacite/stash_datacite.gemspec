@@ -36,15 +36,15 @@ Gem::Specification.new do |s| # rubocop:disable Metrics/BlockLength
   s.files = Dir['{app,config,db,lib}/**/*', 'MIT-LICENSE', 'Rakefile', 'README.rdoc']
   s.test_files = Dir['test/**/*']
 
-  s.add_dependency 'amatch', '>= 0.4.0' # Matching Resource titles against Crossref results
+  s.add_dependency 'amatch', '~> 0.4.0' # Matching Resource titles against Crossref results
   s.add_dependency 'kaminari'
-  s.add_dependency 'leaflet-rails'
+  s.add_dependency 'leaflet-rails', '~> 1.3' 
   s.add_dependency 'loofah'
   s.add_dependency 'mysql2'
   s.add_dependency 'rails', '~> 5.2'
-  s.add_dependency 'responders', '>= 2.4.1'
-  s.add_dependency 'rubyzip', '>= 1.0.0'
-  s.add_dependency 'serrano', '>= 0.5.0' # for CrossRef API
+  s.add_dependency 'responders', '~> 2.4.1'
+  s.add_dependency 'rubyzip', '~> 1.0.0'
+  s.add_dependency 'serrano', '~> 0.5.0' # for CrossRef API
   s.add_dependency 'sync'
   s.add_dependency 'tins'
 
