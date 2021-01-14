@@ -30,8 +30,7 @@ For example, `rspec spec/features/stash_datacite/manuscript_populate_metadata_sp
   - Test names can be shown (instead of non-descriptive dots) with the -fd flag.
   - You can also tack a colon and a line number after the filename to only run
   a test starting on that line number.
-- To run all tests inside the stash repository, type `./testing-build.rb` . Contents of each test
-suite get saved to individual files if you need to look at the output more carefully.
+- To run all tests inside the stash repository, type `RAILS_ENV=test bundle exec rspec`. 
 - When making pull requests or pushes to a repository, GitHub will run tests, though they take 10 minutes
 or so to run.
 

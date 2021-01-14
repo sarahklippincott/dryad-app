@@ -16,7 +16,7 @@ sudo service mysql start
 # to be sure you can get into mysql
 sudo mysql -u root
 
-mysql> CREATE USER 'tester'@'%';
+mysql> CREATE USER 'travis'@'%';
 
 # If you need to use sudo to get into mysql as a root user, please see instructions at 
 # https://askubuntu.com/questions/766334/cant-login-as-mysql-user-root-from-normal-user-account-in-ubuntu-16-04/801950
