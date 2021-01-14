@@ -38,7 +38,7 @@ Gem::Specification.new do |s| # rubocop:disable Metrics/BlockLength
 
   s.add_dependency 'amatch', '~> 0.4.0' # Matching Resource titles against Crossref results
   s.add_dependency 'kaminari', '~> 1.2', '>= 1.2.1'
-  s.add_dependency 'leaflet-rails', '~> 1.3' 
+  s.add_dependency 'leaflet-rails', '~> 1.3'
   s.add_dependency 'loofah', '~> 2.7'
   s.add_dependency 'mysql2'
   s.add_dependency 'rails', '~> 5.2'
