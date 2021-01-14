@@ -45,7 +45,7 @@ Gem::Specification.new do |s| # rubocop:disable Metrics/BlockLength
   s.add_dependency 'datacite-mapping', '~> 0.4.0'
   s.add_dependency 'merritt-manifest', '~> 0.1.3'
   s.add_dependency 'rest-client', '~> 2.0'
-  s.add_dependency 'rubyzip', '~> 1.1'
+  s.add_dependency 'rubyzip', '~> 2.3'
 
   s.add_dependency 'stash_datacite'
   s.add_dependency 'stash_engine' # TODO: should stash_datacite export this?
