@@ -149,7 +149,12 @@ defaults: &DEFAULTS
       ftp_username: <%= Rails.application.credentials[Rails.env.to_sym][:pubmed_ftp_username] %> 
       ftp_password: <%= Rails.application.credentials[Rails.env.to_sym][:pubmed_ftp_password] %> 
       ftp_provider_id: 7893
-      api_key: <%= Rails.application.credentials[Rails.env.to_sym][:pubmed_api_key] %> 
+      api_key: <%= Rails.application.credentials[Rails.env.to_sym][:pubmed_api_key] %>
+  s3:
+    region: us-west-2
+    bucket: <%= Rails.application.credentials[Rails.env.to_sym][:s3_bucket] %>
+    key: <%= Rails.application.credentials[Rails.env.to_sym][:s3_key] %>
+    secret: <%= Rails.application.credentials[Rails.env.to_sym][:s3_secret] %>
 
 development: &DEVELOPMENT
   <<: *DEFAULTS
