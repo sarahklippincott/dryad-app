@@ -6,6 +6,9 @@ module StashEngine
   class Engine < ::Rails::Engine
     isolate_namespace StashEngine
 
+    # add node libraries available to be included if needed.  For evaporate in application.rb for engine
+    config.assets.paths << root.join('node_modules')
+
     # Initializer to combine this engines static assets with the static assets of the hosting site.
     initializer 'static assets' do |app|
       # in production these should be served by the web server? we think? (DM 2016-11-09)
