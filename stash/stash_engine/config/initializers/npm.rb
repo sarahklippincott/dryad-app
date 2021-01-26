@@ -1,0 +1,1 @@
+system 'npm install' unless Rails.env.production? || Rails.env.stage?

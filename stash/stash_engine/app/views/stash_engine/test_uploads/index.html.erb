@@ -1,0 +1,21 @@
+<h1>Test your uploads</h1>
+
+<script>
+  const Evaporate = require('EvaporateJS');
+  const Crypto = require('crypto');
+
+  const config = {
+      signerUrl: "<%# presign_upload_path %>",
+      aws_key: "<%# APP_CONFIG[:s3][:key] %>",
+      bucket: "<%# APP_CONFIG[:s3][:bucket] %>",
+      cloudfront: true,
+      computeContentMd5: true,
+      cryptoMd5Method: data => Crypto
+          .createHash('md5')
+          .update(data)
+          .digest('base64');
+  };
+
+
+
+</script>
