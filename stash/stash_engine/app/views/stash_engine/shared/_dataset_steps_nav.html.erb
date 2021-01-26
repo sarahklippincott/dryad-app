@@ -6,7 +6,7 @@
             class: "c-progress__tab2#{ (params[:controller].end_with?('resources') && params[:action].include?('upload') ? '--active' : '') } js-nav-out" %>
 
   <%= link_to 'Upload Software', stash_engine.up_code_resource_path(@resource.id),
-              class: "c-progress__tab2#{ (params[:controller].end_with?('resources') && params[:action].include?('up_') ? '--active' : '') } js-nav-out" %>
+            class: "c-progress__tab2#{ (params[:controller].end_with?('resources') && params[:action].include?('up_') ? '--active' : '') } js-nav-out" %>
 
   <%= link_to 'Review and Submit', stash_engine.review_resource_path(@resource.id),
             class: "c-progress__tab3#{ (params[:controller].end_with?('resources') && params[:action] == 'review' ? '--active' : '') } js-nav-out" %>

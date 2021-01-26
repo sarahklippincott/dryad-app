@@ -9,10 +9,6 @@ module Stash
 
       ARK_PATTERN = %r{ark:/[a-z0-9]+/[a-z0-9]+}.freeze
 
-      def initialize(url_helpers:, threads: 1)
-        super
-      end
-
       def create_submission_job(resource_id:)
         SubmissionJob.new(resource_id: resource_id, url_helpers: url_helpers)
       end
@@ -20,7 +16,7 @@ module Stash
       def download_uri_for(resource:, record_identifier:)
         merritt_host = merritt_host_for(resource)
         ark = ark_from(record_identifier)
-        "http://#{merritt_host}/d/#{ERB::Util.url_encode(ark)}"
+        "#{merritt_host}/d/#{ERB::Util.url_encode(ark)}"
       end
 
       def update_uri_for(resource:, record_identifier:) # rubocop:disable Lint/UnusedMethodArgument

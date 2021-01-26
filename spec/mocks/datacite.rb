@@ -38,6 +38,43 @@ module Mocks
         ).to_return(status: 200, body: File.read(Rails.root.join('spec', 'fixtures', 'http_responses', 'datacite_response.json')), headers: {})
     end
 
-  end
+    def mock_datacite_and_idgen!
+      mock_datacite!
 
+      @mock_idgen = double('idgen')
+      allow(@mock_idgen).to receive('update_identifier_metadata!'.intern).and_return(nil)
+      allow(@mock_idgen).to receive(:mint_id).and_return("doi:#{Faker::Pid.doi}")
+      allow(Stash::Doi::IdGen).to receive(:make_instance).and_return(@mock_idgen)
+    end
+
+    def mock_good_doi_resolution(doi:)
+      stub_request(:get, doi)
+        .with(
+          headers: {
+            'Host' => 'doi.org'
+          }
+        )
+        .to_return(status: 200, body: '', headers: {})
+    end
+
+    def mock_bad_doi_resolution(doi:)
+      stub_request(:get, doi)
+        .with(
+          headers: {
+            'Host' => 'doi.org'
+          }
+        )
+        .to_return(status: 404, body: '', headers: {})
+    end
+
+    def mock_bad_doi_resolution_server_error(doi:)
+      stub_request(:get, doi)
+        .with(
+          headers: {
+            'Host' => 'doi.org'
+          }
+        )
+        .to_return(status: 500, body: '', headers: {})
+    end
+  end
 end

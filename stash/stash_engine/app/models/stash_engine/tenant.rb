@@ -23,13 +23,15 @@ module StashEngine
     end
 
     # gets the Tenant class to respond to the keys so you can call hash like methods
-    def method_missing(m) # rubocop:disable Style/MethodMissingSuper
+    # rubocop:disable Lint/MissingSuper
+    def method_missing(m)
       @ostruct.send(m)
     end
 
     def respond_to_missing?(*args)
       @ostruct.respond_to?(*args)
     end
+    # rubocop:enable Lint/MissingSuper
 
     def logo_file
       @logo_file ||= begin
@@ -96,7 +98,12 @@ module StashEngine
     end
 
     def full_url(path)
-      URI::HTTPS.build(host: Rails.application.default_url_options[:host], path: path).to_s
+      d = Rails.application.default_url_options
+      if d[:port].blank?
+        URI::HTTPS.build(host: d[:host], path: path).to_s
+      else
+        URI::HTTPS.build(host: d[:host], port: d[:port], path: path).to_s
+      end
     end
 
   end

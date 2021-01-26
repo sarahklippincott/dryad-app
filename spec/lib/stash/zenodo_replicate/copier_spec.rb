@@ -1,11 +1,8 @@
 # testing in here since testing is much better with real loading of the engines and application without wonky problems
 # from the manual setup that doesn't really load rails right in the engines
+require 'webmock/rspec'
 require 'stash/zenodo_replicate'
 require 'byebug'
-
-require 'rails_helper'
-
-RSpec.configure(&:infer_spec_type_from_file_location!)
 
 module Stash
   module ZenodoReplicate
@@ -17,6 +14,7 @@ module Stash
     RSpec.describe Copier do
 
       before(:each) do
+        WebMock.disable_net_connect!(allow_localhost: true)
         @resource = create(:resource)
         @ztc = create(:zenodo_copy, resource: @resource, identifier: @resource.identifier)
         @szr = Stash::ZenodoReplicate::Copier.new(copy_id: @ztc.id)

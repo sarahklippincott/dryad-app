@@ -1,6 +1,6 @@
 # Dryad installation (v0.0.2)
 
-The Dryad application is made of a number of parts intended to keep it more flexible and to separate concerns so that parts can be replaced with new metadata and other engines to customize it.  Some basic information about the project and architechiture is available at [the Dash Website](https://dash.ucop.edu/stash/about), but this document focuses on getting Dash up and running for development.
+The Dryad application is made of a number of parts intended to keep it more flexible and to separate concerns so that parts can be replaced with new metadata and other engines to customize it.  Some basic information about the project and architechiture is available at [the Dryad Platform](https://datadryad.org/stash/our_platform), but this document focuses on getting Dryad up and running for development.
 
 ## The ingredients
 
@@ -30,18 +30,11 @@ Open a (bash) shell and type these commands inside a directory where you want to
 git clone https://github.com/CDL-Dryad/dryad-app
 ```
 
-Your config files will be stored in a separate directory from your application. It can be handy to keep them apart from the application so that you can back them up or commit them to a private repository for configuration separate from the application.  The application will need to have these configuration files symlinked into the application. To copy the example config to an external directory and symlink the files in using a bash shell, type these commands:
-
-```
-cd dryad
-./symlink_config.sh
-```
 You should end up with a directory structure that looks like this one.
 
 ```
-├── dryad-config (contains actual config files)
 ├── dryad
-|   ├── config (with symlinks to dryad-config above)
+|   ├── config
 |   └── dryad-config-example
 └── stash
     ├── stash-harvester
@@ -54,8 +47,8 @@ You should end up with a directory structure that looks like this one.
 ```
 
 Most of the configuration can be left as default. Items to check before first launch:
-1. dryad-config/database.yml
-2. dryad-config/app_config.yml, particularly the ORCID key and secret
+1. config/database.yml
+2. config/app_config.yml, particularly the ORCID key and secret
 
 ## Installing MySQL and Solr
 
@@ -134,7 +127,7 @@ rbenv install $(cat .ruby-version) # installs the ruby-version set in the .ruby-
 gem update --system
 
 # install bundler to handle gem dependencies
-gem install bundler:1.17.3
+gem install bundler:2.1.4
 ```
 
 **If you are running on OSX, ensure some gems are compatible with the system:**
@@ -151,7 +144,7 @@ For all operating systems, continue:
 bundle install
 
 # run the migrations to set up the database tables
-bundle exec rake db:migrate
+bundle exec rails db:migrate
 
 # start your rails server for local development
 rails s
@@ -171,6 +164,15 @@ source ../dryad-config/sample_data/sample_record.sql;
 ```
 
 To configure where the search enterface draws its data from, modify the dryad app config/blacklight.yml to change the endpoint for the development server.  When running locally, the default server is development.
+
+## Creating the System user
+
+Go into Rails console, and create the default user.
+
+```
+bundle exec rails console
+u=StashEngine::User.create(first_name: 'Dryad', last_name: 'System', id: 0)
+```
 
 ## Testing basic functionality
 
@@ -195,18 +197,17 @@ We have enabled submission to a SWORD-enabled Merritt repository, but have only 
 
 ### Repository and identifier service configuration
 
-The Stash platform requires an implementation of the [Stash::Repo](https://github.com/CDL-Dryad/stash/tree/master/lib/stash/repo)
+The Stash platform requires an implementation of the [Stash::Repo](../stash)
 API for identifier assignment and submission to repositories.
 
 Dryad uses CDL's EZID service for identifier assignment and stores datasets in the [Merritt](https://merritt.cdlib.org/) repository.
-The Stash::Repo implementation is provided by the [stash-merritt](https://github.com/CDLUC3/stash-merritt) gem, which is included in the application [Gemfile](../../Gemfile)
-and declared by the `repository:` key in [`app_config.yml`](https://github.com/CDL-Drayd/dryad-config-example/blob/development/config/app_config.yml).
-EZID and Merritt/SWORD must be configured for each tenant in the apporpriate `tenants/*.yml` file, e.g.
+The Stash::Repo implementation is provided by the [stash-merritt](../stash/stash-merritt) gem, which is included in the application [Gemfile](../Gemfile) and declared by the `repository:` key in [`app_config.yml`](../dryad-config-example/app_config.yml).
+EZID and Merritt/SWORD must be configured for each tenant in the appropriate `tenants/*.yml` file, e.g.
 
 ```yaml
 repository: # change me: you'll probably have to change all the following indented values and only if using Merritt repo
     type: merritt
-    domain: merritt-repo-dev-example.cdlib.org
+    domain: http://merritt-repo-dev-example.cdlib.org
     endpoint: "http://uc3-mrtsword-dev.cdlib.org:39001/mrtsword/collection/my_collection_id"
     username: "submitter_username"
     password: "submitter_password"

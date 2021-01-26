@@ -3,21 +3,22 @@
 # This is NOT an ActiveRecord model and does not persist data!!
 # This class represents a row in the Admin's Curation page. It only retrieves the information
 # necessary to populate the table on that page.
+#
+# Use like
+# @datasets = StashEngine::AdminDatasets::CurationTableRow.where(params: helpers.sortable_table_params, tenant: tenant_limit) # (gets all results)
+#
+# If you want to get just one identifier for redrawing a single row, something like this should work
+# @dataset = StashEngine::AdminDatasets::CurationTableRow.where(params: {}, tenant: nil, identifier_id: 37575).first
 
 # rubocop:disable Metrics/ClassLength
 module StashEngine
   module AdminDatasets
     class CurationTableRow
 
-      attr_reader :publication_name
-      attr_reader :identifier_id, :identifier, :qualified_identifier, :storage_size, :search_words
-      attr_reader :resource_id, :title, :publication_date, :tenant_id
-      attr_reader :resource_state_id, :resource_state
-      attr_reader :curation_activity_id, :status, :updated_at
-      attr_reader :editor_id, :editor_name
-      attr_reader :author_names
-      attr_reader :views, :downloads, :citations
-      attr_reader :relevance
+      attr_reader :publication_name, :identifier_id, :identifier, :qualified_identifier, :storage_size,
+                  :search_words, :resource_id, :title, :publication_date, :tenant_id, :resource_state_id,
+                  :resource_state, :curation_activity_id, :status, :updated_at, :editor_id, :editor_name,
+                  :author_names, :views, :downloads, :citations, :relevance
 
       SELECT_CLAUSE = <<-SQL
         SELECT DISTINCT seid.value,
@@ -45,7 +46,7 @@ module StashEngine
           LEFT OUTER JOIN stash_engine_counter_stats secs ON sei.id = secs.identifier_id
       SQL
 
-      # add extra joins when I need to reach into author affiliations for ever dataset
+      # add extra joins when I need to reach into author affiliations for every dataset
       FROM_CLAUSE_ADMIN = <<-SQL
         #{FROM_CLAUSE}
         LEFT OUTER JOIN stash_engine_authors sea2 ON ser.id = sea2.resource_id
@@ -59,10 +60,11 @@ module StashEngine
       TENANT_CLAUSE = 'ser.tenant_id = %{term}'
       STATUS_CLAUSE = 'seca.status = %{term}'
       PUBLICATION_CLAUSE = 'seid.value = %{term}'
+      IDENTIFIER_CLAUSE = 'sei.id = %{term}'
 
       # this method is long, but quite uncomplicated as it mostly just sets variables from the query
       #
-      # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
+      # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
       def initialize(result)
         return unless result.is_a?(Array) && result.length >= 22
 
@@ -90,7 +92,7 @@ module StashEngine
         @citations = result[21] || 0
         @relevance = result.length > 22 ? result[22] : nil
       end
-      # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
+      # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
       #
 
       # lets you get a resource when you need it and caches it
@@ -104,9 +106,9 @@ module StashEngine
         # The tenant, if set, does two things in conjunction.  it limits to items with a tenant_id of the tenant OR
         # affiliated author institution RORs (may be multiple) for this tenant with additional joins and conditions.
         # tenant is only set for admins (not superusers).
-        def where(params:, tenant: nil)
-          return [] unless params.is_a?(Hash)
-
+        #
+        # if resource_id is set then only returns that resource id
+        def where(params:, tenant: nil, identifier_id: nil)
           # If a search term was provided include the relevance score in the results for sorting purposes
           relevance = params.fetch(:q, '').blank? ? '' : ", (#{add_term_to_clause(SEARCH_CLAUSE, params.fetch(:q, ''))}) relevance"
           # editor_name is derived from 2 DB fields so use the last_name instead
@@ -121,10 +123,11 @@ module StashEngine
                                  tenant_filter: params.fetch(:tenant, ''),
                                  status_filter: params.fetch(:curation_status, ''),
                                  publication_filter: params.fetch(:publication_name, ''),
-                                 admin_tenant: tenant)}
+                                 admin_tenant: tenant,
+                                 identifier_id: identifier_id)}
             #{build_order_clause(column, params.fetch(:direction, ''), params.fetch(:q, ''))}
           "
-          results = ActiveRecord::Base.connection.execute(query).map { |result| new(result) }
+          results = ApplicationRecord.connection.execute(query).map { |result| new(result) }
           # If the user is trying to sort by author names, then
           (column == 'author_names' ? sort_by_author_names(results, params.fetch(:direction, '')) : results)
         end
@@ -133,12 +136,13 @@ module StashEngine
 
         # Create the WHERE portion of the query based on the filters set by the user (if any)
         # rubocop:disable Metrics/ParameterLists
-        def build_where_clause(search_term:, all_advanced:, tenant_filter:, status_filter:, publication_filter:, admin_tenant:)
+        def build_where_clause(search_term:, all_advanced:, tenant_filter:, status_filter:, publication_filter:, admin_tenant:, identifier_id: nil)
           where_clause = [
             (search_term.present? ? build_search_clause(search_term, all_advanced) : nil),
             add_term_to_clause(TENANT_CLAUSE, tenant_filter),
             add_term_to_clause(STATUS_CLAUSE, status_filter),
             add_term_to_clause(PUBLICATION_CLAUSE, publication_filter),
+            add_term_to_clause(IDENTIFIER_CLAUSE, identifier_id),
             create_tenant_limit(admin_tenant)
           ].compact
           where_clause.empty? ? '' : " WHERE #{where_clause.join(' AND ')}"
@@ -169,7 +173,6 @@ module StashEngine
 
         # Create the ORDER BY portion of the query. If the user included a search term order by relevance first!
         # We cannot sort by author_names here, so ignore if that is the :sort_column
-        # rubocop:disable Metrics/CyclomaticComplexity
         def build_order_clause(column, direction, q)
           return 'ORDER BY title' if column == 'relevance' && q.blank?
 
@@ -179,7 +182,6 @@ module StashEngine
             (column.present? && column != 'author_names' ? "ORDER BY #{column} #{direction || 'ASC'}" : '')
           end
         end
-        # rubocop:enable Metrics/CyclomaticComplexity
 
         def sort_by_author_names(results, direction)
           multiply_by = (direction.casecmp('desc').zero? ? -1 : 1)

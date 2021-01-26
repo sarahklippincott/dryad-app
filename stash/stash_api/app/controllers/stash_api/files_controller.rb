@@ -28,7 +28,7 @@ module StashApi
     def show
       file = StashApi::File.new(file_id: params[:id])
       respond_to do |format|
-        format.json { render json: file.metadata }
+        format.any { render json: file.metadata }
       end
     end
 
@@ -36,7 +36,7 @@ module StashApi
     def index
       files = paged_files_for_version
       respond_to do |format|
-        format.json { render json: files }
+        format.any { render json: files }
       end
     end
 
@@ -50,7 +50,7 @@ module StashApi
       after_upload_processing { return }
       file = StashApi::File.new(file_id: @file.id)
       respond_to do |format|
-        format.json { render json: file.metadata, status: 201 }
+        format.any { render json: file.metadata, status: 201 }
       end
     end
 
@@ -62,7 +62,7 @@ module StashApi
       end
       file_hash = make_deleted(file_upload: @stash_file)
       respond_to do |format|
-        format.json { render json: file_hash, status: 200 }
+        format.any { render json: file_hash, status: 200 }
       end
     end
 
@@ -73,7 +73,7 @@ module StashApi
         StashEngine::CounterLogger.general_hit(request: request, file: @stash_file)
         @file_presigned.download(file: @stash_file)
       else
-        render status: 404, text: 'Not found'
+        render status: 404, plain: 'Not found'
       end
     end
 
@@ -169,7 +169,7 @@ module StashApi
       resource = StashEngine::Resource.find(params[:version_id]) # version_id is really resource_id
       visible = resource.file_uploads.present_files
       all_count = visible.count
-      file_uploads = visible.limit(page_size).offset(page_size * (page - 1))
+      file_uploads = visible.limit(DEFAULT_PAGE_SIZE).offset(DEFAULT_PAGE_SIZE * (page - 1))
       results = file_uploads.map { |i| StashApi::File.new(file_id: i.id).metadata }
       files_output(all_count, results)
     end

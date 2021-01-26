@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module StashDatacite
-  class Description < ActiveRecord::Base
+  class Description < ApplicationRecord
     self.table_name = 'dcs_descriptions'
     belongs_to :resource, class_name: StashEngine::Resource.to_s
     include StashEngine::Concerns::ResourceUpdated
@@ -58,7 +58,7 @@ module StashDatacite
     end
 
     def update_search_words
-      resource&.identifier&.update_search_words! if description_type == 'abstract' && description_changed?
+      resource&.identifier&.update_search_words! if description_type == 'abstract' && saved_change_to_description?
     end
 
     after_save :update_search_words

@@ -1,12 +1,6 @@
 # ######################################################
 # Miscellaneous
 
-# symlinked config files
-/config/*.yml
-/config/tenants
-/config/tenants/*.yml
-.config-secret/
-
 # MacOS noise
 .DS_Store
 
@@ -20,6 +14,8 @@ public/assets/
 public/uploads/
 uploads/
 test-reports/
+stash/script/counter-uploader/reports/*.json
+stash/script/counter-uploader/tmp/*.json
 
 # ######################################################
 
@@ -82,7 +78,6 @@ build-iPhoneSimulator/
 
 *.rbc
 capybara-*.html
-.rspec
 /log
 /tmp
 /db/*.sqlite3
@@ -176,3 +171,6 @@ flycheck_*.el
 
 # directory configuration
 .dir-locals.el
+
+# Ignore master key for decrypting credentials and more.
+/config/master.key

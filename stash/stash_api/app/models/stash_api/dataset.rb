@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'securerandom'
 require_relative 'presenter'
 
 module StashApi
@@ -8,6 +9,7 @@ module StashApi
 
     def initialize(identifier:, user: nil)
       id_type, iden = identifier.split(':', 2)
+      @identifier_s = identifier
       @se_identifier = StashEngine::Identifier.where(identifier_type: id_type, identifier: iden).first
       @user = user
     end
@@ -24,12 +26,17 @@ module StashApi
     end
 
     def metadata
-      # gets descriptive metadata together
+      # descriptive metadata is initialized from the last version that
+      # the user is allowed to see
+      return simple_identifier if @se_identifier.nil?
+
       lv = last_version
       return simple_identifier if lv.nil?
 
-      id_size_hsh = id_and_size_hash
-      metadata = id_size_hsh.merge(lv.metadata)
+      # expand the metadata with some dataset-level fields
+      descriptive_hsh = descriptive_metadata_hash
+      metadata = descriptive_hsh.merge(lv.metadata)
+      add_license!(metadata)
       add_edit_link!(metadata, lv)
 
       # gives the links to nearby objects
@@ -78,22 +85,37 @@ module StashApi
     # an identifier that cannot be viewed
     def simple_identifier
       {
-        identifier: @se_identifier.to_s,
-        id: @se_identifier.id,
-        message: 'identifier cannot be viewed, may be missing required elements'
+        identifier: @se_identifier&.to_s || @identifier_s,
+        id: @se_identifier&.id,
+        message: 'Identifier cannot be viewed. Either you lack permission to view it, or it is missing required elements.'
       }
     end
 
-    def id_and_size_hash
+    def descriptive_metadata_hash
       {
         identifier: @se_identifier.to_s,
         id: @se_identifier.id,
-        storage_size: @se_identifier.storage_size
+        storageSize: @se_identifier.storage_size,
+        relatedPublicationISSN: @se_identifier.publication_issn
       }
     end
 
+    def add_license!(hsh)
+      hsh[:license] = StashEngine::License.by_id(@se_identifier.license_id)[:uri] if @se_identifier.license_id
+    end
+
     def add_edit_link!(hsh, version)
-      hsh[:editLink] = "/stash/edit/#{CGI.escape(@se_identifier.to_s)}" if version.resource.permission_to_edit?(user: @user)
+      ensure_edit_code
+      return unless version.resource.permission_to_edit?(user: @user)
+
+      hsh[:editLink] = "/stash/edit/#{CGI.escape(@se_identifier.to_s)}/#{@se_identifier.edit_code}"
+    end
+
+    def ensure_edit_code
+      return if @se_identifier.edit_code
+
+      @se_identifier.edit_code = SecureRandom.urlsafe_base64(10)
+      @se_identifier.save
     end
 
   end

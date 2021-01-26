@@ -6,10 +6,7 @@ module Datacite
     class DataciteXMLFactory # rubocop:disable Metrics/ClassLength
       DEFAULT_RESOURCE_TYPE = ResourceType.new(resource_type_general: ResourceTypeGeneral::DATASET, value: 'dataset')
 
-      attr_reader :doi_value
-      attr_reader :se_resource_id
-      attr_reader :total_size_bytes
-      attr_reader :version
+      attr_reader :doi_value, :se_resource_id, :total_size_bytes, :version
 
       def initialize(doi_value:, se_resource_id:, total_size_bytes:, version:)
         @doi_value = doi_value
@@ -148,7 +145,12 @@ module Datacite
       end
 
       def add_subjects(dcs_resource)
-        dcs_resource.subjects = se_resource.subjects.map { |s| Subject.new(value: s.subject) }
+        normal_subjects = se_resource.subjects.non_fos.map { |s| Subject.new(value: s.subject) }
+        # FOS subjects are a special kind Martin is handling differently based on a prefix in the string
+        fos_subjects = se_resource.subjects.where(subject_scheme: 'fos').map do |s|
+          Subject.new(value: "FOS: #{s.subject}")
+        end
+        dcs_resource.subjects = normal_subjects + fos_subjects
       end
 
       def add_contributors(dcs_resource, datacite_3: false)

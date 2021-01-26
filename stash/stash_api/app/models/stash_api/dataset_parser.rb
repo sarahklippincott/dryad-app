@@ -11,7 +11,7 @@ module StashApi
     # If  id_string is set, then populate the desired (doi) into the identifier in format like doi:xxxxx/yyyyy for new dataset.
     # the id is a stash_engine_identifier object and indicates an already existing object.  May not set both.
     # On final submission, updating the DOI may fail if it's wrong, unauthorized or not in the right format.
-    def initialize(hash: nil, id: nil, user:, id_string: nil)
+    def initialize(user:, hash: nil, id: nil, id_string: nil)
       raise 'You may not specify an identifier string with an existing identifier' if id && id_string
 
       @id_string = id_string
@@ -139,7 +139,7 @@ module StashApi
         afis = StashDatacite::Affiliation.from_isni_id(isni_id: json_author[:affiliationISNI])
         a.affiliation = afis
       elsif json_author[:affiliation].present?
-        a.affiliation = StashDatacite::Affiliation.from_long_name(long_name: json_author[:affiliation], check_ror: true)
+        a.affiliation = StashDatacite::Affiliation.from_long_name(long_name: json_author[:affiliation], check_ror: false)
       end
 
       a.save(validate: false) # we can validate on submission, keeps from saving otherwise
@@ -165,7 +165,7 @@ module StashApi
       publisher = StashDatacite::Publisher.where(resource_id: @resource.id).first
       return if publisher
 
-      StashDatacite::Publisher.create(publisher: @resource.tenant.short_name, resource_id: @resource.id) if @resource.tenant
+      StashDatacite::Publisher.create(publisher: 'Dryad', resource_id: @resource.id) if @resource.tenant
     end
 
     def ensure_resource_type

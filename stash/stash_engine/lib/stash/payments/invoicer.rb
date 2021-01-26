@@ -126,8 +126,8 @@ module Stash
           collection_method: 'send_invoice',
           customer: customer_id,
           days_until_due: 30,
-          description: 'Dryad deposit ' + resource.identifier.to_s + ', ' + resource.title,
-          metadata: { 'curator' => curator.name }
+          description: "Dryad deposit #{resource.identifier}, #{resource.title}",
+          metadata: { 'curator' => curator&.name }
         )
       end
 

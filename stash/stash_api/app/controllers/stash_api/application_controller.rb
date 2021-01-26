@@ -11,19 +11,14 @@ module StashApi
 
     skip_before_action :verify_authenticity_token
 
-    PAGE_SIZE = 10
-
+    DEFAULT_PAGE_SIZE = 10
     UNACCEPTABLE_MSG = '406 - unacceptable: please set your Content-Type and Accept headers for application/json'
 
     def page
       @page ||= (params[:page].to_i.positive? ? params[:page].to_i : 1)
     end
 
-    def page_size
-      PAGE_SIZE
-    end
-
-    def paging_hash(result_count:)
+    def paging_hash(result_count:, page_size: DEFAULT_PAGE_SIZE)
       up = UrlPager.new(current_url: request.original_url, result_count: result_count, current_page: page, page_size: page_size)
       up.paging_hash
     end
@@ -32,8 +27,8 @@ module StashApi
       accept = request.headers['accept']
       content_type = request.headers['content-type']
       # check that content_type and accept headers are as expected
-      ct_ok = !content_type.nil? && content_type.start_with?('application/json')
-      accept_ok = !accept.nil? && (accept.include?('*/*') || accept.include?('application/json'))
+      ct_ok = content_type.nil? || content_type.start_with?('application/json')
+      accept_ok = accept.nil? || (accept.include?('*/*') || accept.include?('application/json'))
       return if ct_ok && accept_ok
 
       render json: { error: UNACCEPTABLE_MSG }.to_json, status: 406

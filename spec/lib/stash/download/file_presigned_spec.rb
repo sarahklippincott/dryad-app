@@ -3,16 +3,14 @@
 require 'stash/download/file_presigned'
 require 'byebug'
 
-require 'rails_helper'
-
 RSpec.configure(&:infer_spec_type_from_file_location!)
 
 module Stash
   module Download
-
     RSpec.describe FilePresigned do
+
       before(:each) do
-        @resource = create(:resource)
+        @resource = create(:resource, tenant_id: 'dryad')
         @file_upload = create(:file_upload, resource_id: @resource.id)
 
         @controller_context = double

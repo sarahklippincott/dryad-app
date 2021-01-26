@@ -86,7 +86,7 @@ module Stash
       end
 
       def keywords
-        @resource.subjects&.map(&:subject)
+        @resource.subjects.non_fos&.map(&:subject)
       end
 
       def notes
@@ -97,14 +97,19 @@ module Stash
       end
 
       def related_identifiers
-        related = @resource.related_identifiers.map do |ri|
+        related = @resource.related_identifiers.where(verified: true).where(hidden: false).map do |ri|
           { relation: ri.relation_type_friendly&.camelize(:lower), identifier: ri.related_identifier }
         end
 
-        # this relation is for myself and created in Dryad, so doesn't make sense here
-        related.delete_if { |i| i[:relation] == 'isSupplementTo' && i[:identifier].include?('/zenodo.') && @software_upload }
+        # this relation is for myself and created in Dryad, so doesn't make sense to send to zenodo
+        related.delete_if { |i| i[:identifier].include?('/zenodo.') && @software_upload }
 
-        related.push(relation: 'isSupplementTo', identifier: @resource.identifier.identifier) if @software_upload
+        # This is adding the link back from zenodo to our datasets for software
+        if @software_upload
+          related.push(relation: 'isSourceOf',
+                       identifier: StashDatacite::RelatedIdentifier.standardize_doi(@resource.identifier.identifier),
+                       scheme: 'doi')
+        end
         related ||= []
         related
       end

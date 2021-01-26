@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 module StashDatacite
   module Resource
     describe MetadataEntry do
@@ -10,7 +8,7 @@ module StashDatacite
       attr_reader :metadata_entry
       attr_reader :tenant
 
-      before(:all) do
+      before(:each) do
         @user = StashEngine::User.create(
           email: 'lmuckenhaupt@example.edu',
           tenant_id: 'dataone'
@@ -20,9 +18,7 @@ module StashDatacite
         @dcs_resource = Datacite::Mapping::Resource.parse_xml(dc3_xml)
         stash_wrapper_xml = File.read('spec/data/archive/stash-wrapper.xml')
         @stash_wrapper = Stash::Wrapper::StashWrapper.parse_xml(stash_wrapper_xml)
-      end
 
-      before(:each) do
         @resource = ResourceBuilder.new(
           user_id: user.id,
           dcs_resource: dcs_resource,
@@ -56,7 +52,7 @@ module StashDatacite
           @metadata_entry = MetadataEntry.new(resource, tenant)
           publisher = metadata_entry.instance_variable_get(:@publisher)
           expect(publisher).to be_a(Publisher)
-          expect(publisher.publisher).to eq('DataONE')
+          expect(publisher.publisher).to eq('Dryad')
           expect(publisher.resource_id).to eq(resource.id)
         end
       end

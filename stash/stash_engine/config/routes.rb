@@ -55,10 +55,11 @@ StashEngine::Engine.routes.draw do
   match 'downloads/download_resource/:resource_id', to: 'downloads#download_resource', as: 'download_resource', via: %i[get post]
   match 'downloads/capture_email/:resource_id', to: 'downloads#capture_email', as: 'download_capture_email', via: %i[get post]
   get 'downloads/file_stream/:file_id', to: 'downloads#file_stream', as: 'download_stream'
+  get 'downloads/zenodo_file/:file_id', to: 'downloads#zenodo_file', as: 'download_zenodo'
   get 'share/:id', to: 'downloads#share', as: 'share'
   get 'downloads/assembly_status/:id', to: 'downloads#assembly_status', as: 'download_assembly_status'
 
-  get 'edit/:doi', to: 'metadata_entry_pages#edit_by_doi', as: 'edit', constraints: { doi: /\S+/ }
+  get 'edit/:doi/:edit_code', to: 'metadata_entry_pages#edit_by_doi', as: 'edit', constraints: { doi: /\S+/ }
   match 'metadata_entry_pages/find_or_create', to: 'metadata_entry_pages#find_or_create', via: %i[get post put]
   match 'metadata_entry_pages/new_version', to: 'metadata_entry_pages#new_version', via: %i[post get]
   match 'metadata_entry_pages/reject_agreement', to: 'metadata_entry_pages#reject_agreement', via: [:delete]
@@ -73,6 +74,7 @@ StashEngine::Engine.routes.draw do
   match 'auth/migrate/mail', to: 'dashboard#migrate_data_mail', via: [:get]
   match 'auth/migrate/code', to: 'dashboard#migrate_data', via: [:get]
   match 'auth/migrate/done', to: 'dashboard#migration_complete', via: [:get]
+  match 'session/test_login', to: 'sessions#test_login', via: [:get, :post],  as: 'test_login'
 
   match 'terms/view', to: 'dashboard#view_terms', via: %i[get post]
 
@@ -91,6 +93,7 @@ StashEngine::Engine.routes.draw do
   get 'our_mission', to: 'pages#our_mission'
   get 'our_platform', to: 'pages#our_platform'
   get 'our_staff', to: 'pages#our_staff'
+  get 'our_advisors', to: 'pages#our_advisors'
   get 'publishing_charges', to: 'pages#publishing_charges'
   get 'submission_process', to: 'pages#submission_process'
   get 'why_use', to: 'pages#why_use'
@@ -99,7 +102,6 @@ StashEngine::Engine.routes.draw do
   get 'terms', to: 'pages#terms'
   get 'editor', to: 'pages#editor'
   get 'dataset/*id', to: 'landing#show', as: 'show', constraints: { id: /\S+/ }
-  get 'data_paper/*id', to: 'landing#data_paper', as: 'data_paper', constraints: { id: /\S+/ }
   get 'landing/citations/:identifier_id', to: 'landing#citations', as: 'show_citations'
   get '404', to: 'pages#app_404', as: 'app_404'
   get 'landing/metrics/:identifier_id', to: 'landing#metrics', as: 'show_metrics'
@@ -113,10 +115,22 @@ StashEngine::Engine.routes.draw do
   get 'admin/user_dashboard/:id', to: 'admin#user_dashboard', as: 'admin_user_dashboard'
 
   # admin_datasets, this routes actions to ds_admin with a possible id without having to define for each get action, default is index
-  get 'ds_admin/(:action(/:id))', controller: 'admin_datasets'
+  get 'ds_admin', to: 'admin_datasets#index'
+  get 'ds_admin/index', to: 'admin_datasets#index'
+  get 'ds_admin/index/:id', to: 'admin_datasets#index'
+  get 'ds_admin/data_popup/:id', to: 'admin_datasets#data_popup'
+  get 'ds_admin/note_popup/:id', to: 'admin_datasets#note_popup'
+  get 'ds_admin/curation_activity_popup/:id', to: 'admin_datasets#curation_activity_popup'
+  get 'ds_admin/curation_activity_change/:id', to: 'admin_datasets#curation_activity_change'
+  get 'ds_admin/activity_log/:id', to: 'admin_datasets#activity_log'
+  get 'ds_admin/stats_popup/:id', to: 'admin_datasets#stats_popup'
 
-  # flexible routing for submission queue controller
-  get 'submission_queue/(:action(/:id))', controller: 'submission_queue'
+  # routing for submission queue controller
+  get 'submission_queue', to: 'submission_queue#index'
+  get 'submission_queue/refresh_table', to: 'submission_queue#refresh_table'
+  get 'submission_queue/graceful_shutdown', to: 'submission_queue#graceful_shutdown'
+  get 'submission_queue/graceful_start', to: 'submission_queue#graceful_start'
+  get 'submission_queue/ungraceful_start', to: 'submission_queue#ungraceful_start'
 
   # Administrative Status Dashboard that displays statuses of external dependencies
   get 'status_dashboard', to: 'status_dashboard#show'

@@ -13,6 +13,7 @@ set :passenger_pool, '6'
 namespace :deploy do
   before :starting, :stop_delayed_job
   after :finished, :start_delayed_job
+  after :finished, :copy_crons_to_shared
 end
 
 #set :bundle_env_variables, { 'RAILS_ENV' => 'stage' }
@@ -21,6 +22,9 @@ end
 #    $ SERVER_HOSTS='localhost' bundle exec cap development deploy
 set :server_hosts, ENV["SERVER_HOSTS"]&.split(' ') || ['uc3-dryaduix2-stg-2c.cdlib.org']
 role %i[app web], fetch(:server_hosts), user: 'dryad'
+
+set :ssm_root_path, '/uc3/dryad/stg/'
+set :aws_region, 'us-west-2'
 
 #on roles(:all) do |host|
 #  puts "setting server host: #{host.hostname}"

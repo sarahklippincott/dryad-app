@@ -38,6 +38,29 @@ module StashEngine
 
     def choose_login; end
 
+    # this only available in non-production environments and only if special environment variable set when starting server
+    # rubocop:disable Metrics/AbcSize
+    def test_login
+      return render(body: 'unauthorized', status: 401) if Rails.env.include?('prod') || ENV['TEST_LOGIN'].blank?
+
+      @tenants = [OpenStruct.new(id: 'dryad', name: 'Dryad')]
+      @tenants << StashEngine::Tenant.partner_list.map do |t|
+        OpenStruct.new(id: t.tenant_id, name: t.short_name)
+      end
+      @tenants.flatten!
+
+      return if request.method == 'GET'
+
+      return render(body: 'ORCID must not be blank', status: 403) if params[:orcid].blank?
+
+      existing = User.where(orcid: params[:orcid].strip).first || User.create(orcid: params[:orcid].strip)
+      existing.update(first_name: params[:first_name], last_name: params[:last_name], email: params[:email],
+                      tenant_id: params[:tenant_id], role: params[:role], migration_token: User::NO_MIGRATE_STRING)
+      session[:user_id] = existing.id
+      redirect_to dashboard_path, status: :found
+    end
+    # rubocop:enable Metrics/AbcSize
+
     def choose_sso
       tenants = [OpenStruct.new(id: '', name: '')]
       tenants << StashEngine::Tenant.partner_list.map do |t|
@@ -65,6 +88,11 @@ module StashEngine
     def sso
       tenant = StashEngine::Tenant.find(params[:tenant_id])
       if tenant.present?
+        if tenant&.authentication&.strategy == 'author_match' # requires authors to be from institution later on
+          current_user.update(tenant_id: tenant.tenant_id)
+          redirect_to dashboard_path, status: :found
+          return
+        end
         redirect_to tenant.omniauth_login_path(tenant_id: tenant.tenant_id)
       else
         render :choose_sso, alert: 'You must select a partner institution from the list.'

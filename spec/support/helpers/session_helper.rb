@@ -3,6 +3,7 @@ module SessionsHelper
   include Mocks::Omniauth
   include Mocks::Ror
 
+  # rubocop:disable Style/OptionalBooleanParameter
   def sign_in(user = create(:user), with_shib = false)
     sign_out if have_text('Logout')
     case user
@@ -14,9 +15,10 @@ module SessionsHelper
       raise ArgumentError, "Invalid argument user: #{user}"
     end
   end
+  # rubocop:enable Style/OptionalBooleanParameter
 
   def sign_out
-    visit stash_url_helpers.sessions_destroy_path
+    safe_visit stash_url_helpers.sessions_destroy_path
   end
 
   def sign_in_as_user(user, with_shib)
@@ -34,6 +36,24 @@ module SessionsHelper
       click_link 'Continue to My Datasets'
     elsif user.tenant_id.blank?
       click_link 'Continue to My Datasets'
+    end
+  end
+
+  def safe_visit(url)
+    max_retries = 3
+    times_retried = 0
+    begin
+      visit url
+    rescue Net::ReadTimeout => e
+      if times_retried < max_retries
+        times_retried += 1
+        puts "Failed to visit #{current_url}, retry #{times_retried}/#{max_retries}"
+        retry
+      else
+        puts e.message
+        puts e.backtrace.inspect
+        exit(1)
+      end
     end
   end
 

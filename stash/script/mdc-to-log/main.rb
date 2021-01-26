@@ -8,25 +8,25 @@ require 'time'
 
 filename = ARGV.first
 
-ActiveRecord::Base.logger = Logger.new(STDERR)
+ActiveRecord::Base.logger = Logger.new($stderr)
 ActiveRecord::Base.logger.level = :warn
 ActiveRecord::Base.establish_connection(
   adapter: 'sqlite3',
   database: filename
 )
 
-class LogItem < ActiveRecord::Base
+class LogItem < ApplicationRecord
   self.table_name = 'logitem'
   belongs_to :metadata_item
 end
 
-class MetadataItem < ActiveRecord::Base
+class MetadataItem < ApplicationRecord
   self.table_name = 'metadataitem'
   has_many :log_items
   has_many :authors
 end
 
-class Author < ActiveRecord::Base
+class Author < ApplicationRecord
   self.table_name = 'metadataauthor'
   belongs_to :metadata_item
 end

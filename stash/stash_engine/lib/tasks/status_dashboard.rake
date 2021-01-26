@@ -22,8 +22,8 @@ namespace :status_dashboard do
 
   desc 'Seed the external_dependencies table'
   task seed: :environment do
-    p 'The external_dependencies table is not empty! Aborting seed process' if StashEngine::ExternalDependency.all.any?
-    exit if StashEngine::ExternalDependency.all.any?
+    p 'Seeding the external_dependencies table.'
+    StashEngine::ExternalDependency.all.destroy_all
 
     BASELINE_EXTERNAL_DEPENDENCIES.each do |dependency_hash|
       StashEngine::ExternalDependency.create(dependency_hash)
@@ -45,6 +45,14 @@ namespace :status_dashboard do
       name: 'Stash Notifier',
       description: 'The service that lets Dryad know when Merritt has finished processing (via the OAI-PMH feed)',
       documentation: 'If the OAI-PMH feed is working and the item is present, check the stash-notifier logs.  A pid file that was never removed may prevent the notifier from processing additional items since it believes a notifier instance is already running.  You may need to remove the pid file or look to see if there is some problem with the notifier.  Maybe a server got shut down in the middle of a run so the notifier didn\'t have a chance to remove it\'s own pid.',
+      internally_managed: true,
+      status: 1
+    },
+    {
+      abbreviation: 'db_backup',
+      name: 'Database Backups',
+      description: 'The service manages short-term backups of the database',
+      documentation: 'This is managed by the 30-minute cron job on the server.',
       internally_managed: true,
       status: 1
     },
@@ -119,6 +127,14 @@ namespace :status_dashboard do
       description: 'Dryad uses Datacite\'s EventData API to gather Counter statistics',
       documentation: 'Dryad uses the EventData API to collect statistics for Counter.<br><br>The logic behind this integration can be found in `stash_engine/lib/stash/event_data`',
       internally_managed: false,
+      status: 1
+    },
+    {
+      abbreviation: 'counter_calculation',
+      name: 'Counter Calculation Script',
+      description: 'Dryad calculates stats weekly and submits them to the DataCite hub, required for correct stats',
+      documentation: 'Dryad calculates the stats using a Python library that may run for a few days. https://github.com/CDLUC3/counter-processor .  It should submit stats after running and by done by late in the week (Thursday).  It checks the log to see if it ran.',
+      internally_managed: true,
       status: 1
     }
   ].freeze

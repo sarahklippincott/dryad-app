@@ -15,6 +15,9 @@ set :passenger_pool, '6'
 set :server_hosts, ENV["SERVER_HOSTS"]&.split(' ') || 'uc3-dryaduix2-dev.cdlib.org'
 role %i[app web], fetch(:server_hosts), user: 'dryad'
 
+set :ssm_root_path, '/uc3/dryad/dev/'
+set :aws_region, 'us-west-2'
+
 #on roles(:all) do |host|
 #  puts "setting server host: #{host.hostname}"
 #end
@@ -76,23 +79,7 @@ role %i[app web], fetch(:server_hosts), user: 'dryad'
 #   }
 
 namespace :deploy do
-
   before :starting, :stop_delayed_job
   after :finished, :start_delayed_job
-
-  #desc 'update local engines to get around requiring version number changes in development'
-  #task :update_local_engines do
-  #  on roles(:app) do
-  #    my_branch = capture("cat #{deploy_to}/current/branch_info")
-  #
-  #    %w(stash_datacite stash_engine stash_discovery).each do |engine|
-  #      execute "cd #{deploy_to}/#{engine}; git checkout #{my_branch}; git reset --hard origin/#{my_branch}; git pull"
-  #    end
-
-      # execute "cd #{deploy_to}/stash_datacite; git checkout #{my_branch}; git reset --hard origin/#{my_branch}; git pull"
-      # execute "cd #{deploy_to}/stash_engine; git checkout #{my_branch}; git reset --hard origin/#{my_branch}; git pull"
-  #  end
-  #end
-
-  #after :published, :update_local_engines
+  after :finished, :copy_crons_to_shared
 end

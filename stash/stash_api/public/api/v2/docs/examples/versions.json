@@ -31,7 +31,7 @@
           "curies": [
             {
               "name": "stash",
-              "href": "https://github.com/CDL-Dryad/stash/blob/master/stash_api/link-relations.md#{rel}",
+              "href": "https://github.com/CDL-Dryad/stash/blob/main/stash_api/link-relations.md#{rel}",
               "templated": "true"
             }
           ]
@@ -47,8 +47,10 @@
           }
         ],
         "abstract": "<p>test</p>",
+	"lastModificationDate": "2020-02-18",
         "versionNumber": 1,
-        "versionStatus": "submitted"
+        "versionStatus": "submitted",
+	"visibility": "public"
       },
       {
         "_links": {
@@ -67,7 +69,7 @@
           "curies": [
             {
               "name": "stash",
-              "href": "https://github.com/CDL-Dryad/stash/blob/master/stash_api/link-relations.md#{rel}",
+              "href": "https://github.com/CDL-Dryad/stash/blob/main/stash_api/link-relations.md#{rel}",
               "templated": "true"
             }
           ]
@@ -83,8 +85,10 @@
           }
         ],
         "abstract": "<p>test</p>",
+	"lastModificationDate": "2020-02-18",
         "versionNumber": 2,
-        "versionStatus": "submitted"
+        "versionStatus": "submitted",
+	"visibility": "public"
       },
       {
         "_links": {
@@ -103,7 +107,7 @@
           "curies": [
             {
               "name": "stash",
-              "href": "https://github.com/CDL-Dryad/stash/blob/master/stash_api/link-relations.md#{rel}",
+              "href": "https://github.com/CDL-Dryad/stash/blob/main/stash_api/link-relations.md#{rel}",
               "templated": "true"
             }
           ]
@@ -119,6 +123,7 @@
           }
         ],
         "abstract": "<p>test</p>",
+	"lastModificationDate": "2020-02-18",  
         "locations": [
           {
             "point": {
@@ -128,7 +133,8 @@
           }
         ],
         "versionNumber": 3,
-        "versionStatus": "error"
+          "versionStatus": "error",
+	  "visibility": "restricted"
       }
     ]
   }

@@ -2,10 +2,10 @@ require_dependency 'stash_engine/application_controller'
 
 # TODO: maybe should move this around and move the index into a user's controller since it's mostly (but not all) about users.
 module StashEngine
-  class AdminController < ApplicationController # rubocop:disable Metrics/ClassLength
+  class AdminController < ApplicationController
 
     include SharedSecurityController
-    include StashEngine::Concerns::Sortable
+    helper SortableTableHelper
 
     before_action :load_user, only: %i[popup set_role user_dashboard]
     before_action :require_admin
@@ -17,8 +17,7 @@ module StashEngine
       setup_superuser_facets
       @users = User.all
       add_institution_filter! # if they chose a facet or are only an admin
-      @sort_column = user_sort_column
-      @users = @users.order(@sort_column.order).page(@page).per(@page_size)
+      @users = @users.order(helpers.sortable_table_order).page(@page).per(@page_size)
     end
 
     # popup a dialog with the user's admin info for changing
@@ -63,29 +62,6 @@ module StashEngine
       @user = User.find(params[:id])
     end
 
-    # this sets up the sortable-table gem for users table
-    def user_sort_column
-      sort_table = SortableTable::SortTable.new(
-        [sort_column_definition('tenant_id', 'stash_engine_users', %w[tenant_id]),
-         sort_column_definition('name', 'stash_engine_users', %w[last_name first_name]),
-         sort_column_definition('role', 'stash_engine_users', %w[role]),
-         sort_column_definition('last_login', 'stash_engine_users', %w[last_login])]
-      )
-      sort_table.sort_column(params[:sort], params[:direction])
-    end
-
-    def dataset_sort_column
-      sort_table = SortableTable::SortTable.new(
-        [sort_column_definition('title', 'stash_engine_identifiers', %w[title]),
-         sort_column_definition('status', 'stash_engine_curation_activities', %w[status]),
-         sort_column_definition('publication_date', 'stash_engine_resources', %w[publication_date]),
-         sort_column_definition('updated_at', 'stash_engine_resources', %w[updated_at]),
-         sort_column_definition('size', 'stash_engine_identifiers', %w[size]),
-         sort_column_definition('edited_by_name', 'stash_engine_users', %w[last_name first_name])]
-      )
-      sort_table.sort_column(params[:sort], params[:direction])
-    end
-
     def setup_ds_status_facets
       @status_facets = @presenters.map(&:embargo_status).uniq.sort
       return unless params[:status]
@@ -94,8 +70,6 @@ module StashEngine
     end
 
     def sort_and_paginate_datasets
-      @sort_column = dataset_sort_column
-      manual_sort!(@presenters, @sort_column)
       @page_presenters = Kaminari.paginate_array(@presenters).page(@page).per(@page_size)
     end
 
@@ -120,6 +94,7 @@ module StashEngine
     end
 
     # TODO: move into models or elsewhere for queries, but can't get tests to run right now so holding off
+    # rubocop:disable Metrics/AbcSize
     def limit_to_tenant!
       @stats[:user_count] = @stats[:user_count].where(tenant_id: current_user.tenant_id)
       @stats[:dataset_count] = @stats[:dataset_count].joins(resources: :user)
@@ -130,6 +105,7 @@ module StashEngine
       @stats[:dataset_submitted_7days] = @stats[:dataset_submitted_7days].joins(resources: :user)
         .where(['stash_engine_users.tenant_id = ?', current_user.tenant_id]).distinct
     end
+    # rubocop:enable Metrics/AbcSize
 
     def setup_superuser_facets
       @tenant_facets = StashEngine::Tenant.all.sort_by(&:short_name)

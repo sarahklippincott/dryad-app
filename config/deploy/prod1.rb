@@ -17,6 +17,9 @@ set :passenger_pool, '12'
 set :server_hosts, ENV["SERVER_HOSTS"]&.split(' ') || ['uc3-dryaduix2-prd-2a.cdlib.org']
 role %i[app web], fetch(:server_hosts), user: 'dryad'
 
+set :ssm_root_path, '/uc3/dryad/prd/'
+set :aws_region, 'us-west-2'
+
 #on roles(:all) do |host|
 #  puts "setting server host: #{host.hostname}"
 #end
@@ -78,4 +81,5 @@ role %i[app web], fetch(:server_hosts), user: 'dryad'
 
 namespace :deploy do
   before :start, :setup_cron
+  after :finished, :copy_crons_to_shared
 end

@@ -1,6 +1,6 @@
 module StashEngine
   # rubocop:disable Metrics/ClassLength
-  class User < ActiveRecord::Base
+  class User < ApplicationRecord
 
     has_many :resources
     has_many :journal_roles
@@ -8,7 +8,7 @@ module StashEngine
 
     def self.from_omniauth_orcid(auth_hash:, emails:)
       users = find_by_orcid_or_emails(orcid: auth_hash[:uid], emails: emails)
-      raise 'More than one user matches the ID or email returned by ORCID' if users.count > 1
+      raise "More than one user matches the ID or email returned by ORCID, user_ids: #{users.map(&:id).join(', ')}" if users.count > 1
 
       return users.first.update_user_orcid(orcid: auth_hash[:uid], temp_email: emails.try(:first)) if users.count == 1
 
@@ -17,7 +17,7 @@ module StashEngine
 
     def self.find_by_orcid_or_emails(orcid:, emails:)
       emails = Array.wrap(emails)
-      emails = emails.delete_if(&:blank?)
+      emails.delete_if(&:blank?)
       User.where(['orcid = ? or email IN ( ? )', orcid, emails])
     end
 

@@ -40,7 +40,6 @@ Gem::Specification.new do |s| # rubocop:disable Metrics/BlockLength
   s.add_dependency 'amoeba', '>= 3.0.0'
   s.add_dependency 'bolognese', '>= 0.15.9'
   s.add_dependency 'carrierwave', '~> 0.10.0'
-  s.add_dependency 'cirneco', '>= 0.9.27'
   s.add_dependency 'ckeditor', '~> 4.3.0' # lock to 4.x series since upgrading to 5.x blows up until we figure out the upgrade path
   s.add_dependency 'concurrent-ruby', '>= 1.0'
   s.add_dependency 'daemons'
@@ -57,6 +56,7 @@ Gem::Specification.new do |s| # rubocop:disable Metrics/BlockLength
   s.add_dependency 'jquery-rails'
   s.add_dependency 'jquery-turbolinks'
   s.add_dependency 'jquery-ui-rails'
+  s.add_dependency 'jwt' # for RATs for Zenodo https://github.com/jwt/ruby-jwt
   s.add_dependency 'kaminari'
   s.add_dependency 'noid', '>= 0.9.0'
   s.add_dependency 'omniauth', '>= 1.8.1'
@@ -64,15 +64,12 @@ Gem::Specification.new do |s| # rubocop:disable Metrics/BlockLength
   s.add_dependency 'omniauth-rails_csrf_protection'
   s.add_dependency 'omniauth-shibboleth', '>= 1.2.1'
   s.add_dependency 'posix-spawn', '>= 0.3.13'
-  s.add_dependency 'rails', '~> 4.2'
+  s.add_dependency 'rails', '~> 5.2'
   s.add_dependency 'redcarpet', '>= 3.3'
   s.add_dependency 'rest-client'
   s.add_dependency 'rinku'
   s.add_dependency 'rsolr'
-  s.add_dependency 'sortable-table'
   s.add_dependency 'stripe', '~> 4.16.0'
-  s.add_dependency 'wicked_pdf', '~> 1.1.0'
-  s.add_dependency 'wkhtmltopdf-binary', '~> 0.12.3.1'
   s.add_dependency 'zaru', '~> 0.3'
 
   s.add_development_dependency 'colorize', '>= 0.8'

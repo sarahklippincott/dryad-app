@@ -8,8 +8,6 @@ module StashEngine
     class NotifierService < DependencyCheckerService
 
       LOG_FILE = '/dryad/apps/ui/shared/cron/logs/stash-notifier.log'
-
-      # rubocop:disable Metrics/CyclomaticComplexity
       def ping_dependency
         super
         record_status(online: false, message: "No log file found at '#{LOG_FILE}'.") unless File.exist?(LOG_FILE)
@@ -20,7 +18,7 @@ module StashEngine
         # A failure to process the notifier's PATCH call is not a failure in the notifier itself
         log_err = nil if log_err.match(/PATCH to http/)
 
-        online = last_run_date.present? && last_run_date >= (Time.now - 15.minutes) && !log_err
+        online = last_run_date.present? && last_run_date >= (Time.now - 15.minutes).utc && !log_err.present?
         msg = ''
         msg += "The Notifier service last updated its log at '#{last_run_date}'. " unless online
         msg += "Notifier log has error: #{log_err}" if log_err.present?
@@ -30,7 +28,6 @@ module StashEngine
         record_status(online: false, message: e.to_s)
         false
       end
-      # rubocop:enable Metrics/CyclomaticComplexity
 
     end
 

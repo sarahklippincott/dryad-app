@@ -31,20 +31,7 @@
 </div>
 
 <% if @review.software_uploads.count > 0 %>
-	<div>
-		<h3>License and Terms of Service for Software</h3>
-		<p>Software and other files uploaded will be managed and preserved at Zenodo. Your related DOI will be linked to
-			your dataset. Please select a license from the below dropdown list for your Zenodo deposit. For guidance,
-			check <a href="https://choosealicense.com/" target="_blank">choosealicense.org</a>.</p>
-		<div>
-			<label for="zenodo_license" class="required">Select license for files (type to search within list)</label>
-			<%# select_tag 'zenodo_license', options_for_select([ ["MIT License", 'mit'], ["GNU public dedication", 'gnu'] ]) %>
-			<%= select_tag 'zenodo_license',
-		 		options_from_collection_for_select(StashEngine::SoftwareLicense.all, 'identifier', 'name',
-																					 @resource&.identifier&.software_license&.identifier || 'MIT') %>
-
-		</div>
-	</div>
+	<%= render partial: 'stash_datacite/licenses/software_license' %>
 <% end %>
 
 <div>
@@ -115,7 +102,7 @@ $(document).ready(function(){
 });
 </script>
 
-<% if current_user&.id != @resource.user_id %>
+<% if current_user && (current_user.id != @resource.user_id) %>
   <script>
     $('#agree_to_license, #agree_to_tos, #agree_to_dda').prop('disabled', true);
   </script>

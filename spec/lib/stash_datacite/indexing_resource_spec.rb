@@ -1,4 +1,3 @@
-require 'rails_helper'
 require_relative '../../../stash/spec_helpers/factory_helper'
 
 module Datacite
@@ -55,11 +54,12 @@ module Stash
         @resource = create(:resource, identifier_id: @identifier.id, user_id: @user.id)
         @resource_state = create(:resource_state, resource_id: @resource.id)
         @resource.update(current_resource_state_id: @resource_state.id)
-        create(:related_identifier, resource_id: @resource.id, related_identifier_type: 'doi', relation_type: 'issupplementto',
+        create(:related_identifier, resource_id: @resource.id, related_identifier_type: 'doi', relation_type: 'cites',
                                     related_identifier: 'doi123')
         @version = create(:version, resource_id: @resource.id)
         @affil1 = create(:affiliation, long_name: 'Lafayette Tech', ror_id: 'https://ror.example.org/16xx22bs')
         @affil2 = create(:affiliation, long_name: 'Orinda Tech', ror_id: 'https://ror.example.org/18dl67sn1')
+        @resource.authors = []
         @author1 = create(:author, resource_id: @resource.id)
         @author1.update(affiliations: [@affil1])
         @author2 = create(:author, author_first_name: 'Horace', author_last_name: 'Liu', author_email: 'holyu@example.org',
@@ -120,8 +120,7 @@ module Stash
 
       describe '#creator_names' do
         it 'returns correct names' do
-          expect(@ir.creator_names).to eql([@resource.authors.first.author_full_name,
-                                            @author1.author_full_name,
+          expect(@ir.creator_names).to eql([@author1.author_full_name,
                                             @author2.author_full_name])
         end
       end
@@ -291,8 +290,7 @@ module Stash
             uuid: @resource.identifier.to_s,
             dc_identifier_s: @resource.identifier.to_s,
             dc_title_s: @resource.title,
-            dc_creator_sm: [@resource.authors.first.author_full_name,
-                            @author1.author_full_name,
+            dc_creator_sm: [@author1.author_full_name,
                             @author2.author_full_name],
             dc_type_s: 'Dataset',
             dc_description_s: @resource.descriptions.where(description_type: 'abstract').map(&:description).join("\r"),
@@ -301,13 +299,12 @@ module Stash
             georss_box_s: nil,
             solr_geom: nil,
             solr_year_i: 2019,
-            dct_issued_dt: @resource.publication_date.strftime('%Y-%m-%dT%TZ'), # TimeWithZone
+            dct_issued_dt: @resource.publication_date.utc.iso8601,
             dc_rights_s: 'CC0 1.0 Universal (CC0 1.0) Public Domain Dedication',
             dc_publisher_s: @resource.publisher.publisher,
             dct_temporal_sm: ['2018-11-14'],
             dryad_author_affiliation_id_sm: ['https://ror.example.org/16xx22bs', 'https://ror.example.org/18dl67sn1'],
-            dryad_author_affiliation_name_sm: [@resource.authors.first.affiliation.long_name,
-                                               @affil1.long_name,
+            dryad_author_affiliation_name_sm: [@affil1.long_name,
                                                @affil2.long_name],
             dryad_related_publication_name_s: 'Journal of Testing Fun',
             dryad_related_publication_id_s: 'manuscript123 pubmed123 doi123'

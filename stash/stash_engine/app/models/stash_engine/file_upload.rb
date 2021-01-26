@@ -2,8 +2,9 @@ require 'zaru'
 require 'cgi'
 require 'stash/download/file_presigned' # to import the Stash::Download::Merritt exception
 require 'stash/download' # for the thing that prevents character mangling in http.rb library
+
 module StashEngine
-  class FileUpload < ActiveRecord::Base
+  class FileUpload < ApplicationRecord
     belongs_to :resource, class_name: 'StashEngine::Resource'
     has_many :download_histories, class_name: 'StashEngine::DownloadHistory', dependent: :destroy
 
@@ -50,7 +51,7 @@ module StashEngine
 
     # the Merritt URL to query in order to get the information on the presigned URL
     def merritt_presign_info_url
-      raise "Filename may not be blank when creating presigned URL" if upload_file_name.blank?
+      raise 'Filename may not be blank when creating presigned URL' if upload_file_name.blank?
 
       # The gsub below ensures and number signs get double-encoded because otherwise Merritt cuts them off early.
       # We can remove the workaround if it changes in Merritt at some point in the future.
@@ -108,5 +109,6 @@ module StashEngine
       Dir.glob(File.join(uploads_dir, '*')).select { |i| %r{/\d+$}.match(i) }
         .select { |i| File.directory?(i) }.select { |i| File.mtime(i) + 7.days < Time.new.utc }.map { |i| File.basename(i) }
     end
+
   end
 end

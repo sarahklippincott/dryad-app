@@ -1,27 +1,23 @@
 <h1>Our Governance</h1>
 
-<p>Dryad is a not-for-profit membership organization, recognized as a 501(c)3 by the U.S. Internal Revenue Service. Dryad members nominate and elect the Board of Directors, twelve individuals from the stakeholder community who provide strategic planning, fiscal oversight, and oversee the position of the Executive Director. Members also approve any amendments to the organization’s <strong><a href="/docs/DryadBylaws.pdf">Bylaws</a></strong>, have the opportunity to steer policies and features, and are kept abreast of emerging issues in data publishing.</p>
+<p>Dryad is a not-for-profit membership organization, recognized as a 501(c)3 by the U.S. Internal Revenue Service. Dryad members nominate and elect the Board of Directors, twelve individuals from the stakeholder community who provide strategic planning, fiscal oversight, and oversee the position of the Executive Director. Members also approve any amendments to the organization’s <strong><a href="/docs/DryadBylaws.pdf">Bylaws</a></strong>, have the opportunity to steer policies and features, and are kept abreast of emerging issues in data publishing.</p> Our <a href="https://blog.datadryad.org/code-of-conduct/">Code of Conduct</a> applies for all Dryad community spaces.
 
-<h2>Current Board Members<a name="board"></h2>
+<a name="board"></a>
+<h2>Current Board Members</h2>
 
 <div class="bio">
-  <img src="/images/bruna.jpg" alt="Emilio Bruna" title="Emilo Bruna">
-  <p><strong>Emilio Bruna (Class of 2020)</strong> is a Distinguished Teaching Scholar and Professor of Tropical Ecology and Latin American Studies at the University of Florida. He is Editor-in-Chief of Biotropica and previously served on the Editorial Board of Ecology and Ecological Monographs. He brings to the Board the perspective of a research scientist (>65 peer-reviewed publications) and Editor (~600 decisions on manuscripts) who works in close collaboration with scientists and students in developing countries. He also has experience curating and archiving ecological datasets, including several in Dryad.</p>
+  <img src="/images/edmunds.jpg" alt="Scott Edmunds" title="Scott Edmunds">
+  <p><strong>Scott Edmunds (Class of 2023)</strong> is Editor-in-Chief for <a href="https://academic.oup.com/gigascience">GigaScience</a>, a self-proclaimed data nerd, and an Executive Committee member for Open Data Hong Kong. He has co-founded Citizen Science organisations Bauhinia Genome and CitizenScience.Asia and also teaches data management and curation at Hong Kong University. His academic background includes training in Biochemistry at Imperial College and a PhD on the Molecular Pathology of Ocular Melanoma at the Royal London Hospital, where his research mainly focused on Cancer Cell and Molecular Biology. After postdoctoral positions on Cancer Molecular Pathology at the WHO International Agency for Research in Cancer in Lyon and Institute of Cell and Molecular Sciences in London (Queen Mary) he was senior scientific editor for the BMC Genomics and Bioinformatics journals at BioMed Central before moving in 2010 to Shenzhen/Hong Kong to set up the GigaScience journal and GigaDB database for the BGI (the world’s largest genomic organisation). Working with the British Library and DataCite, GigaScience published its first data (the genome of the deadly German outbreak strain of E. coli) in June 2011.</p>  
 </div>
 
 <div class="bio">
-  <img src="/images/hole.jpg" alt="Brian Hole" title="Brian Hole">
-  <p><strong>Brian Hole (Class of 2020)</strong> is the CEO of <a href="https://www.ubiquitypress.com/" target="_blank" title="Ubiquity Press website (opens in a new window)">Ubiquity Press</a>, an open access publisher with a strong focus on alternative research outputs such as data, software, hardware and bioresources. Prior to this he worked at the British Library, managing the DryadUK project which focussed on establishing a sustainable business model and publisher integrations, and also on building cost models for digital preservation. Earlier positions included product development on the Elsevier journals platform, and of analytic applications for enterprise data warehousing at Business Objects. Brian has a research background, and continues to undertake data-centric research at the Institute of Archaeology at University College London when he finds the time.</p>
+  <img src="/images/hanson.jpg" alt="Brooks Hanson" title="Brooks Hanson">
+  <p><strong>Brooks Hanson (Class of 2023)</strong> serves as the Executive Vice President for Science for the <a href="https://www.agu.org/">American Geophysical Union (AGU)</a>. He’s responsible for overseeing AGU’s publications, meetings, and ethics programs and Thriving Earth Exchange and coordinating science activities across these. He served previously as Sr. Vice President for Publications at AGU, responsible for AGU’s portfolio of many books and 20 journals and their editorial operations, helping set overall editorial policies, and leading future developments. Before arriving at AGU, he served as the Deputy Editor for Physical Sciences at Science and earlier as an editor at Science. Brooks has a Ph.D. in Geology from UCLA and held a post-doctoral appointment at the Department of Mineral Sciences, Smithsonian Institution. His main areas or research and publications span the tectonics of the western U.S., metamorphic petrology, modeling magmatic and hydrothermal processes, and on scholarly publishing. He is a fellow of the Geological Society of American and Mineralogical Society of America.</p>
 </div>
 
 <div class="bio">
   <img src="/images/horstmann.jpg" alt="Wolfram Horstmann" title="Wolfram Horstmann">
   <p><strong>Wolfram Horstmann (Class of 2021)</strong> has been Director of Göttingen State and University Library since 2014. Prior to that, he was Associate Director at the Bodleian Libraries of the University of Oxford, UK and CIO at Bielefeld University, Germany. He is Professor at the Information School of the Humboldt University in Berlin, teaching Electronic Publishing, Open Access and Open Science. He is biologist by training and worked on the epistemology of simulations for his doctoral thesis. <a href="https://www.sub.uni-goettingen.de/en/contact/staff-a-z/staff-details/person/wolfram-horstmann/" target="_blank" title="Read more about Wolfram (opens in a new window)">Read more details.</a></p>
-</div>
-
-<div class="bio">
-  <img src="/images/lin.jpg" alt="Jennifer Lin" title="Jennifer Lin">
-  <p><strong>Jennifer Lin (Class of 2022)</strong> has fifteen years’ experience in product development, project management, community outreach, and change management within scholarly communications, education, and the public sector. She is currently Director of Product Management at Crossref, a scholarly infrastructure provider. She previously worked for PLOS where she oversaw product strategy and development for their data program, article-level metrics initiative, and open assessment activities. She worked to promote data sharing through data repositories and the development of tools to make data discoverable and re-usable. Jennifer earned her PhD at Johns Hopkins University. See Jennifer’s <a href="http://orcid.org/0000-0002-9680-2328" target="_blank" title="Jennifer's ORCiD Profile (opens in a new window)">ORCiD profile.</a></p>
 </div>
 
 <div class="bio">
@@ -46,12 +42,12 @@
 
 <div class="bio">
   <img src="/images/naomipenfold.png" alt="Naomi Penfold" title="Naomi Penfold">
-  <p><strong>Naomi Penfold (Class of 2022)</strong> is Community Manager at eLife, a non-profit organisation with the mission to help scientists accelerate discovery by operating a platform for research communication that encourages and recognises the most responsible behaviours in science. She supports early-career researchers to improve their work environment, and advocates for the use of preprints as PREreview Advisory Committee member and previously with ASAPbio (2018-2019). She brings to the Board experience as a life scientist (PhD, 2017, University of Cambridge), in science publishing and open science innovation (eLife, 2016-2018, 2020-), and a current focus on scientific community engagement as a fellow of the CSCCE Community Engagement Fellowship Program (CEFP) 2019. Read more about Naomi: <a href="https://npscience.github.io/about-me.html" target="_blank" title="Naomi's profile">https://npscience.github.io/about-me.html</a>.</p>
+  <p><strong>Naomi Penfold (Class of 2022)</strong> is Funding Programme Designer, Science Practice, where she works with funders to design more inclusive, transparent, and strategic grantmaking and philanthropy. She brings to the Board experience as a life scientist (PhD, 2017, University of Cambridge), supporting the early-career researcher community and promoting open science and transparency in research communication (eLife, 2016-2018, 2020; ASAPbio, 2018-2020; mentor, Open Life Science, 2020; advisor, PREreview, 2018-2020; fellow, CSCCE Community Engagement Fellowship Program (CEFP 2019)). Read more about Naomi: <a href="https://npscience.github.io/about-me.html">https://npscience.github.io/about-me.html</a>).</p>
 </div>
 
 <div class="bio">
-  <img src="/images/strasser.jpg" alt="Carly Strasser" title="Carly Strasser">
-  <p><strong>Carly Strasser (Class of 2020)</strong> Carly is the Director of Academic Alliances and Data Strategy at the Fred Hutchinson Cancer Research Center, where she develops partnerships with academic and non-profit research organizations in support of Hutch Data Commonwealth initiatives. Carly was previously a program officer at the Gordon and Betty Moore Foundation, focused on funding and promoting academic data science. While at Moore, Carly led the implementation of an open access policy for grantees. Previously, Carly also worked as Director of Strategic Development for the Collaborative Knowledge Foundation and was a Research Data Specialist at the California Digital Library where she helped develop and promote CDL’s researcher-focused services, and worked to encourage data sharing and good data management practices by researchers. Carly received a B.A. in Marine Science and a Ph.D. in Biological Oceanography from the MIT/WHOI Joint Program. More at <a href="https://strasser.github.io/" target="_blank" title="Read more about Carly (opens in a new window)">carlystrasser.net.</a></p>
+  <img src="/images/ruttenberg.jpg" alt="Judy Ruttenberg" title="Judy Ruttenberg">
+  <p><strong>Judy Ruttenberg (Class of 2023)</strong> is the Director of Scholars and Scholarship at the <a href="https://www.arl.org/">Association of Research Libraries</a>. With more than twenty years of experience working in and on behalf of academic and research libraries, Ruttenberg’s expertise is in scholarly communication and collections, collaboration, and strategic partnerships. Ruttenberg is currently working with a committee of ARL deans and directors, a team of ARL staff, and key partners in the research and learning community to advance open science by design within research institutions. An experienced project leader, Ruttenberg recently co-directed an IMLS and Alfred P. Sloan Foundation-funded initiative on open, linked, interoperable metadata called SHARE, of which Dryad was a participating repository. She is particularly focused on research data policy and governance, and on strengthening relationships between data curators within universities and federal agencies</p>
 </div>
 
 <div class="bio">
@@ -65,8 +61,8 @@
 </div>
 
 <div class="bio">
-  <img src="/images/fox.jpg" alt="Charles Fox" title="Charles Fox">
-  <p><strong>Charles Fox (Ex Officio)</strong> is a professor of evolutionary biology, Senior Editor of Functional Ecology, co-editor of five books in evolutionary biology, and co-editor of the Year in Evolution series (published by Wiley-Blackwell). He brings to the Board the perspective of a research scientist (with over 100 refereed articles) with extensive experience in the publishing industry as an editor and previous member of British Ecological Society's Publications Committee. <a href="http://www.uky.edu/~cfox/" target="_blank" title="Read more about Chuck (opens in a new window)">Read more about Chuck.</a></p>
+  <img src="/images/williams.jpg" alt="Jason Williams" title="Jason Williams">
+  <p><strong>Jason Williams (Class of 2023)</strong> is Assistant Director, External Collaborations at the <a href="https://dnalc.cshl.edu/">Cold Spring Harbor Laboratory DNA Learning Center</a> where he develops national biology education programs. Jason leads education, outreach, and training for CyVerse (US national cyberinfrastructure for the life sciences) and has trained thousands of students, researchers and educators in bioinformatics, data science, and molecular biology. Jason’s focus has been developing bioinformatics in undergraduate education and career-spanning learning for biologists. Jason’s “Reinventing Scientific Talent” proposal was a winning entry in the US National Science Foundation’s NSF 2026 Idea Machine search for the next set of “Big Ideas”; proposals that will shape funding priorities for the foundation. Jason is founder of <a href="https://lifescitrainers.org/">LifeSciTrainers.org</a> – a global effort to promote community of practice among professionals who develop short-format training for life scientists. Jason is also a member of and has chaired science advisory boards in the US, UK, and Australia, and is a former chair of the Software Carpentry Foundation. In 2020, Jason was recognized as a US National Academy of Sciences Kavli Frontiers of Science Fellow. Jason is also a teacher at the Yeshiva University High School for Girls.</p>
 </div>
 
 <div class="bio">
@@ -74,17 +70,6 @@
   <p><strong>Günter Waibel (Ex Officio)</strong> is Associate Vice Provost and Executive Director of California Digital Library, one of the world's largest digital research libraries. Collaborating with stakeholders across the UC system and beyond, Waibel is advancing efforts to build and support new models of scholarly communication; provide leadership, strategic planning, management and decision making for the CDL; and foster strategic partnerships at the state, national, and international levels. Waibel brings extensive experience in the digital library and broader cultural heritage communities and is well-known for his work in promoting cross-domain collaboration. In his previous position as the Director of the Digitization Program Office at the Smithsonian Institution, Waibel oversaw the strategic plan for creating a digital Smithsonian out of the institution’s 19 museums and 9 research centers. More at <a href="http://www.linkedin.com/in/waibel" target="_blank" title="Günter's linked in profile (opens in a new window)">http://www.linkedin.com/in/waibel.</a></p>
 </div>
 
-<h2>Funding</h2>
-
-<p>Dryad gratefully acknowledges support from the following organizations. Any opinions, findings, and conclusions or recommendations expressed in this material are those of the project staff and do not necessarily reflect the views of the funders.</p>
-
-<ul>
-<li>"<a href="http://wiki.datadryad.org/NSF_grant_2016-2019">Enabling the preservation of research data underlying scientific findings through the Dryad Digital Repository</a>", from the U.S. National Science Foundation, 2016-2019. </li>
-<li>"<a href="http://project-thor.eu/">Technical and Human Infrastructure for Open Research (THOR)</a>", a project funded by the European Commission under the Horizon 2020 programme, 2015-2018.</li>
-<li><a href="https://cos.io/pr/2015-09-24/">Dryad-Open Science Framework integration grant</a>, 2015.</li>
-</ul>
-
-<p>See <a href="http://wiki.datadryad.org/Grants">past awards</a>.</p>
 
 <h2>Annual Reports</h2>
 
@@ -92,24 +77,15 @@
 
 <ul>
 <li>
-<a href="/docs/DryadAnnualReport2018.pdf">Annual report for 2018</a>
+<a href="https://github.com/datadryad/governance/blob/main/annual-reports/DryadAnnualReport2019.pdf">Annual report for 2019</a>
 </li>
 <li>
-<a href="/docs/DryadAnnualReport2017.pdf">Annual report for 2017</a>
-</li>
-<li>
-<a href="/docs/DryadAnnualReport2016.pdf">Annual report for 2016</a>
-</li>
-<li>
-<a href="/docs/DryadAnnualReport2015.pdf">Annual report for 2015</a>
-</li>
-<li>
-<a href="/docs/DryadAnnualReport2014.pdf">Annual report for 2014</a>
-</li>
-<li>
-<a href="/docs/DryadAnnualReport2013.pdf">Annual report for 2013</a>
-</li>
-<li>
-<a href="/docs/DryadAnnualReport2012.pdf">Annual report for 2012</a>
+<a href="https://github.com/datadryad/governance/blob/main/annual-reports/index.md">Previous years' Annual reports</a>
 </li>
 </ul>
+
+<h2>Board Information</h2>
+
+Dryad Board maintains <a href=https://github.com/datadryad/governance/blob/main/meeting-minutes/index.md>meeting minutes</a> for all of its meetings.
+
+<a href=https://github.com/datadryad/governance/blob/main/COIs/index.md>Dryad Board Conflict of Interest Forms</a>

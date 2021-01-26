@@ -17,7 +17,7 @@ module StashApi
     def show
       @curation_activity = StashEngine::CurationActivity.find(params[:id])
       respond_to do |format|
-        format.json { render json: @curation_activity }
+        format.any { render json: @curation_activity }
       end
     end
 
@@ -28,46 +28,44 @@ module StashApi
       @curation_activity = @curation_activity.where(user_id: @user.id) if params.key?(:user_id)
       @curation_activity = @curation_activity.order(updated_at: :desc)
       respond_to do |format|
-        format.json { render json: @curation_activity }
+        format.any { render json: @curation_activity }
       end
     end
 
     # POST /datasets/{dataset_id}/curation_activity
     def create
-      params.permit!
       resource = StashEngine::Identifier.find_with_id(params[:dataset_id]).latest_resource
       create_curation_activity(resource)
       respond_to do |format|
-        format.json { render json: resource&.reload&.current_curation_activity }
+        format.any { render json: resource&.reload&.current_curation_activity }
       end
     end
 
     # PUT /curation_activity/{id}
     def update
-      params.permit!
       resource = StashEngine::Identifier.find(params[:dataset_id]).latest_resource
       create_curation_activity(resource)
       respond_to do |format|
-        format.json { render json: resource&.reload&.current_curation_activity }
+        format.any { render json: resource&.reload&.current_curation_activity }
       end
     end
 
     # DELETE /curation_activity/{id}
     def destroy
       StashEngine::CurationActivity.destroy(params[:id])
-      render json: { status: 'Curation activity with identifier ' + params[:id] + ' has been successfully deleted.' }.to_json, status: 200
+      render json: { status: "Curation activity with identifier #{params[:id]} has been successfully deleted." }.to_json, status: 200
     end
 
     def initialize_stash_identifier(id)
       ds = DatasetsController.new
       @stash_identifier = ds.get_stash_identifier(id)
-      render json: { error: 'cannot find dataset with identifier ' + id }.to_json, status: 404 if @stash_identifier.nil?
+      render json: { error: "cannot find dataset with identifier #{id}" }.to_json, status: 404 if @stash_identifier.nil?
     end
 
     private
 
     # Publish, embargo or simply change the status
-    # rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength
+    # rubocop:disable Metrics/MethodLength
     def create_curation_activity(resource)
       return unless resource.present?
 
@@ -91,7 +89,8 @@ module StashApi
       # that is, don't change a status other than submitted or peer_review
       if ca_note&.match(/based on notification from journal/) &&
          !%w[submitted peer_review].include?(resource.current_curation_status)
-        ca_note = "received #{ca_status} notification from journal module, but retaining current curation status due to workflow rules"
+        ca_note = "received notification from journal module that the associated manuscript is #{ca_status}, " \
+                  "but the dataset is #{resource.current_curation_status}, so it will retain that status"
         ca_status = resource.current_curation_status
       end
 
@@ -101,7 +100,7 @@ module StashApi
                                            note: ca_note,
                                            created_at: params[:curation_activity][:created_at] || Time.now.utc)
     end
-    # rubocop:enable Metrics/CyclomaticComplexity, Metrics/MethodLength
+    # rubocop:enable Metrics/MethodLength
 
     def record_published_date(resource)
       return if resource.publication_date.present?

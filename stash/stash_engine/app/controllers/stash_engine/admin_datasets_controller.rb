@@ -5,11 +5,10 @@ module StashEngine
   class AdminDatasetsController < ApplicationController
 
     include SharedSecurityController
-    include StashEngine::Concerns::Sortable
+    helper SortableTableHelper
 
     before_action :require_admin
     before_action :setup_paging, only: [:index]
-    before_action :setup_ds_sorting, only: [:index]
 
     TENANT_IDS = Tenant.all.map(&:tenant_id)
 
@@ -21,9 +20,7 @@ module StashEngine
 
       @all_stats = Stats.new
       @seven_day_stats = Stats.new(tenant_id: my_tenant_id, since: (Time.new.utc - 7.days))
-
-      @datasets = StashEngine::AdminDatasets::CurationTableRow.where(params: params, tenant: tenant_limit)
-
+      @datasets = StashEngine::AdminDatasets::CurationTableRow.where(params: helpers.sortable_table_params, tenant: tenant_limit)
       @publications = @datasets.collect(&:publication_name).compact.uniq.sort { |a, b| a <=> b }
       @pub_name = params[:publication_name] || nil
 
@@ -56,7 +53,13 @@ module StashEngine
     # Unobtrusive Javascript (UJS) to do AJAX by running javascript
     def note_popup
       respond_to do |format|
-        resource = Resource.includes(:identifier, :curation_activities).find(params[:id])
+        @identifier = Identifier.where(id: params[:id]).first
+        resource =
+          if @identifier.last_submitted_resource&.id.present?
+            Resource.includes(:identifier, :curation_activities).find(@identifier.last_submitted_resource.id)
+          else
+            @identifier.latest_resource # usually notes go on latest submitted, but there is none, so put it here
+          end
         @curation_activity = CurationActivity.new(
           resource_id: resource.id,
           status: resource.current_curation_activity.status
@@ -68,17 +71,32 @@ module StashEngine
     # Unobtrusive Javascript (UJS) to do AJAX by running javascript
     def curation_activity_popup
       respond_to do |format|
-        @resource = Resource.includes(:identifier, :curation_activities).find(params[:id])
+        @identifier = Identifier.where(id: params[:id]).first # changed this to use identifier_id rather than resource_id
+        # using the last submitted resource should apply the curation to the correct place, even with windows held open
+        @resource = Resource.includes(:identifier, :curation_activities).find(@identifier.last_submitted_resource.id)
         @curation_activity = StashEngine::CurationActivity.new(resource_id: @resource.id)
         format.js
       end
     end
 
+    # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     def curation_activity_change
       respond_to do |format|
         format.js do
+          @identifier = Identifier.find(params[:identifier_id])
+          @resource = @identifier.last_submitted_resource
+          @last_resource = @identifier.resources.order(id: :desc).first # the last resource of all, even not submitted
+
+          if @resource.id != @last_resource.id && %w[embargoed published].include?(params[:resource][:curation_activity][:status])
+            return publishing_error
+          end
+
+          @last_state = @resource&.curation_activities&.last&.status
+          @this_state = (params[:resource][:curation_activity][:status].blank? ? @last_state : params[:resource][:curation_activity][:status])
+
+          return state_error unless CurationActivity.allowed_states(@last_state).include?(@this_state)
+
           @note = params[:resource][:curation_activity][:note]
-          @resource = Resource.find(params[:id])
           @resource.current_editor_id = current_user.id
           decipher_curation_activity
           @resource.publication_date = @pub_date
@@ -89,18 +107,17 @@ module StashEngine
                                                                    note: @note)
           @resource.save
           @resource.reload
+          @curation_row = StashEngine::AdminDatasets::CurationTableRow.where(params: {}, tenant: nil, identifier_id: @resource.identifier.id).first
         end
       end
     end
+    # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
     # show curation activities for this item
     def activity_log
       @identifier = Identifier.find(params[:id])
-      created_at = SortableTable::SortColumnDefinition.new('created_at')
-      sort_table = SortableTable::SortTable.new([created_at])
-      @sort_column = sort_table.sort_column(params[:sort], params[:direction])
       resource_ids = @identifier.resources.collect(&:id)
-      @curation_activities = CurationActivity.where(resource_id: resource_ids).order(@sort_column.order, id: :asc)
+      @curation_activities = CurationActivity.where(resource_id: resource_ids).order(helpers.sortable_table_order, id: :asc)
       @internal_data = InternalDatum.where(identifier_id: @identifier.id)
     end
 
@@ -113,20 +130,6 @@ module StashEngine
     end
 
     private
-
-    def setup_ds_sorting
-      sort_table = SortableTable::SortTable.new(
-        [sort_column_definition('title', nil, %w[title]),
-         sort_column_definition('status', nil, %w[status]),
-         sort_column_definition('author_names', nil, %w[author_names]),
-         sort_column_definition('identifier', nil, %w[identifier]),
-         sort_column_definition('updated_at', nil, %w[updated_at]),
-         sort_column_definition('editor_name', nil, %w[editor_name]),
-         sort_column_definition('storage_size', nil, %w[storage_size]),
-         sort_column_definition('publication_date', nil, %w[publication_date])]
-      )
-      @sort_column = sort_table.sort_column(params[:sort], params[:direction])
-    end
 
     def setup_paging
       if request.format.csv?
@@ -192,6 +195,35 @@ module StashEngine
       # If the user also provided a publication date and the date is today then
       # revert to published status
       @status = 'published' if @pub_date.present? && @pub_date <= Date.today.to_s
+    end
+
+    def publishing_error
+      @error_message = <<-HTML.chomp.html_safe
+        <p>You're attempting to embargo or publish a dataset that is being edited or hasn't successfully finished submission.</p>
+        <p>The latest version submission status is <strong>#{@last_resource.current_resource_state.resource_state}</strong> for
+        resource id #{@last_resource.id}.</p>
+        <p>You may need to wait a minute for submission to complete if this was recently edited or submitted again.</p>
+      HTML
+      render :curation_activity_error
+    end
+
+    def state_error
+      @error_message = <<-HTML.chomp.html_safe
+        <p>You're attempting to set the curation state to <strong>#{@this_state}</strong>,
+          which isn't an allowed state change from <strong>#{@last_state}</strong>.</p>
+        <p>This error may indicate that you are operating on stale data--such as by holding the <strong>status</strong> dialog
+        open in a separate window while making changes elsewhere (or another user has made recent changes).</p>
+        <p>The most likely ways to fix this error:</p>
+        <ul>
+          <li>Close this dialog and re-open the dialog to set the curation status again.</li>
+          <li>Or refresh the <strong>Dataset Curation</strong> list by reloading the page.</li>
+          <li>In some circumstances, submissions or re-submissions of metadata and files must be completed before states can update correctly,
+           so waiting a minute or two may fix the problem.</li>
+        </ul>
+         <hr/>
+        <p>Reference information -- resource id <strong>#{@resource.id}</strong> and doi <strong>#{@resource.identifier.identifier}</strong></p>
+      HTML
+      render :curation_activity_error
     end
 
   end

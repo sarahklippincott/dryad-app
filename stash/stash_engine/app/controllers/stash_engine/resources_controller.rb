@@ -3,8 +3,8 @@ require_dependency 'stash_engine/application_controller'
 # rubocop:disable Metrics/ClassLength
 module StashEngine
   class ResourcesController < ApplicationController
-    before_action :require_login, except: %i[data_paper]
-    before_action :require_modify_permission, except: %i[index new data_paper]
+    before_action :require_login
+    before_action :require_modify_permission, except: %i[index new]
     before_action :require_in_progress, only: %i[upload review upload_manifest up_code up_code_manifest]
     before_action :lockout_incompatible_uploads, only: %i[upload upload_manifest]
     before_action :lockout_incompatible_sfw_uploads, only: %i[up_code up_code_manifest]
@@ -87,7 +87,22 @@ module StashEngine
     def destroy
       resource.destroy
       respond_to do |format|
-        format.html { redirect_to return_to_path_or(dashboard_path), notice: 'The in-progress version was successfully deleted.' }
+        format.html do
+          # There is a return URL for a simple case and backwards compatibility (only for for whole user and for journals).
+          # There is also one for curators and need to return back to different pages/filter setting for each dataset they
+          # edit in one of dozens of different windows at the same time, so needs to be specific to each dataset.
+          notice = 'The in-progress version was successfully deleted.'
+          if session["return_url_#{@resource.identifier_id}"] || session[:returnURL]
+            return_url = session["return_url_#{@resource.identifier_id}"] || session[:returnURL]
+            session["return_url_#{@resource.identifier_id}"] = nil
+            session[:returnURL] = nil
+            redirect_to return_url, notice: notice
+          elsif current_user
+            redirect_to return_to_path_or(dashboard_path), notice: notice
+          else
+            redirect_to root_path, notice: notice
+          end
+        end
         format.json { head :no_content }
       end
     end

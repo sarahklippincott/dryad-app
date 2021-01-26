@@ -1,10 +1,12 @@
+require 'json'
+
 # config valid only for current version of Capistrano
 lock '~> 3.14'
 
 set :application, 'dryad'
 set :repo_url, 'https://github.com/CDL-Dryad/dryad-app.git'
 
-# Default branch is :master -- uncomment this to prompt for branch name
+# Default branch is :main -- uncomment this to prompt for branch name
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp unless ENV['BRANCH']
 # Actually, use development for default branch
 set :branch, 'development'
@@ -12,9 +14,6 @@ set :branch, ENV['BRANCH'] if ENV['BRANCH']
 
 # Default deploy_to directory is /var/www/my_app_name
 set :deploy_to, '/apps/dryad/apps/ui'
-
-# Default value for :scm is :git
-set :scm, :git
 
 # Default value for :format is :pretty
 # set :format, :pretty
@@ -26,8 +25,9 @@ set :scm, :git
 # set :pty, true
 
 # Default value for :linked_files is []
-#set :linked_files, fetch(:linked_files, []).push(Dir.glob('config/*.yml'), Dir.glob('config/tenants/*.yml')).flatten.uniq
-#set :linked_files, fetch(:linked_files, []).push(invoke 'deploy:my_linked_files').flatten.uniq
+# This syntax doesn't work well for getting multiple files out of a directory, so
+# it is better to add linked_files through the my_linked_files below.
+# set :linked_files, fetch(:linked_files, []).push('fileA.txt', 'config/fileB.txt')
 
 # Default value for linked_dirs is []
 set :linked_dirs, fetch(:linked_dirs, []).push('log', 'tmp/pids', 'tmp/cache', 'tmp/sockets', 'vendor/bundle',
@@ -68,6 +68,20 @@ namespace :debug do
       execute :printenv
     end
   end
+
+  # These are useful for testing the server setup
+  # see https://capistranorb.com/documentation/faq/why-does-something-work-in-my-ssh-session-but-not-in-capistrano/
+  task :query_interactive do
+    on roles(:app) do
+      info capture("[[ $- == *i* ]] && echo 'Interactive' || echo 'Not interactive'")
+    end
+  end
+
+  task :query_login do
+    on roles(:app) do
+      info capture("shopt -q login_shell && echo 'Login shell' || echo 'Not login shell'")
+    end
+  end
 end
 
 namespace :deploy do
@@ -75,14 +89,12 @@ namespace :deploy do
   desc 'Get list of linked files for capistrano'
   task :my_linked_files do
     on roles(:app) do
-      res1 = capture "ls /apps/dryad/apps/ui/shared/config/*.yml -1"
+      res1 = capture "ls /apps/dryad/apps/ui/shared/config/*.key -1"
       res1 = res1.split("\n").map{|i| i.match(/config\/[^\/]+$/).to_s }
-      res2 = capture "ls /apps/dryad/apps/ui/shared/config/tenants/*.yml -1"
-      res2 = res2.split("\n").map{|i| i.match(/config\/tenants\/[^\/]+$/).to_s }
-      set :linked_files, (res1 + res2)
+      set :linked_files, (res1)
     end
   end
-
+  
   desc 'Restart Phusion'
   task :restart do
     on roles(:app), wait: 5 do
@@ -92,26 +104,31 @@ namespace :deploy do
     end
   end
 
-  desc 'update config repo'
-  task :update_config do
-    on roles(:app), in: :sequence, wait: 5 do
-      my_branch = fetch(:branch, 'development')
-      my_branch = "origin/#{my_branch}" unless my_branch.match(TAG_REGEXP) #git acts differently with tags (regex for version #s)
-      execute "cd #{deploy_to}/shared; git fetch --tags; git fetch --all; git reset --hard #{my_branch}"
-    end
-  end
-
   desc 'stop delayed_job'
   task :stop_delayed_job do
     on roles(:app) do
-      execute "cd #{deploy_to}/current; bundle exec bin/delayed_job -n 3 stop"
+      execute "cd #{deploy_to}/current; RAILS_ENV=#{fetch(:rails_env)} bundle exec bin/delayed_job -n 3 stop"
     end
   end
 
   desc 'start delayed_job'
   task :start_delayed_job do
     on roles(:app) do
-      execute "cd #{deploy_to}/current; bundle exec bin/delayed_job -n 3 start"
+      execute "cd #{deploy_to}/current; RAILS_ENV=#{fetch(:rails_env)} bundle exec bin/delayed_job -n 3 start"
+    end
+  end
+
+
+  desc 'copy crons to the shared directory where the schedule crons expect them'
+  task :copy_crons_to_shared do
+    # This was going to be a symlink into current, but we don't want to put the shared/cron directory within
+    # current since it contains a backup directory of our database. It would then multiply
+    # the backups across every version when we deploy and make us run out of disk space.
+    #
+    # When the crons are changed in Puppet for the new path, we can remove this copying script.
+    on roles(:app) do
+      execute "mkdir -p /apps/dryad/apps/ui/shared/cron"
+      execute "cp /apps/dryad/apps/ui/current/cron/* /apps/dryad/apps/ui/shared/cron"
     end
   end
 
@@ -169,7 +186,19 @@ namespace :deploy do
     end
   end
 
-  before :starting, :update_config
   before 'deploy:symlink:shared', 'deploy:my_linked_files'
 
+  before :compile_assets, :env_setup
+
+  desc 'Setup ENV Variables'
+  task :env_setup do
+    on roles(:app), wait: 1 do
+      json = capture ("aws ssm get-parameter --name \"#{fetch(:ssm_root_path)}master_key\" --region \"#{fetch(:aws_region)}\"")
+      json = JSON.parse(json)
+      master_key = json['Parameter']['Value']
+
+      info "Uploading master key to #{release_path}/config/master.key"
+      upload! StringIO.new(master_key), "#{release_path}/config/master.key"
+    end
+  end
 end

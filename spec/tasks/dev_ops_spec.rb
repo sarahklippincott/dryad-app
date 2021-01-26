@@ -1,5 +1,6 @@
 require 'rails_helper'
 require 'byebug'
+require 'cgi'
 
 describe 'dev_ops:retry_zenodo_errors', type: :task do
   it 'preloads the Rails environment' do
@@ -12,8 +13,10 @@ describe 'dev_ops:retry_zenodo_errors', type: :task do
 
   describe 'selects the errored ones' do
     before(:each) do
-      @zc1 = create(:zenodo_copy, state: 'error', retries: 5)
-      @zc2 = create(:zenodo_copy, state: 'error', retries: 0)
+      ident = create(:identifier)
+      ident2 = create(:identifier)
+      @zc1 = create(:zenodo_copy, state: 'error', retries: 5, identifier_id: ident.id)
+      @zc2 = create(:zenodo_copy, state: 'error', retries: 0, identifier_id: ident2.id)
       allow(StashEngine::ZenodoCopyJob).to receive(:perform_later).and_return(nil)
     end
 
@@ -41,7 +44,8 @@ describe 'dev_ops:long_jobs', type: :task do
 
   it 'detects no jobs if none in interesting states' do
     create(:repo_queue_state, state: 'completed')
-    create(:zenodo_copy, state: 'finished')
+    ident = create(:identifier)
+    create(:zenodo_copy, state: 'finished', identifier_id: ident.id)
     expect { task.execute }.to output(/0\sitems\sin\sMerritt.+
       0\sitems\sare\sbeing\ssent\sto\sMerritt.+
       0\sitems\sin\sZenodo.+
@@ -56,10 +60,65 @@ describe 'dev_ops:long_jobs', type: :task do
   end
 
   it 'detects zenodo queued and executing' do
-    create(:zenodo_copy, state: 'enqueued')
-    create(:zenodo_copy, state: 'replicating')
+    ident = create(:identifier)
+    ident2 = create(:identifier)
+    create(:zenodo_copy, state: 'enqueued', identifier_id: ident.id)
+    create(:zenodo_copy, state: 'replicating', identifier_id: ident2.id)
     expect { task.execute }.to output(/1\sitems\sin\sZenodo.+
       1\sitems\sare\sstill\sbeing\sreplicated\sto\sZenodo/xm).to_stdout
   end
 
+end
+
+describe 'dev_ops:get_counter_token', type: :task do
+  it 'gets the counter token from our config and outputs it as the last line' do
+    expect { task.execute }.to output(/#{APP_CONFIG[:counter][:token]}/).to_stdout
+  end
+end
+
+describe 'dev_ops:download_uri', type: :task do
+  it 'runs the rake task' do
+    test_path = File.join(Rails.root, 'spec', 'fixtures', 'merritt_ark_changing_test.txt')
+    argv = ['', test_path]
+    stub_const('ARGV', argv)
+    expect { task.execute }.to output(/Done/).to_stdout
+  end
+
+  describe 'testing updates from file' do
+    before(:each) do
+      @test_path = File.join(Rails.root, 'spec', 'fixtures', 'merritt_ark_changing_test.txt')
+    end
+
+    it 'loads the file and calls updates' do
+      # testing one specific value from the file
+      expect(DevOps::DownloadUri).to receive(:update)\
+        .with(doi: 'doi:10.5072/FK20R9S858', old_ark: 'ark:/99999/fk4np2b23p', new_ark: 'ark:/99999/fk4cv5xm2w').once
+      # testing that it is called for the other 11
+      expect(DevOps::DownloadUri).to receive(:update).at_least(11).times
+      DevOps::DownloadUri.update_from_file(file_path: @test_path)
+    end
+
+    it 'updates the database download_uri and update_uri' do
+      resource = create(:resource)
+      old_time = Time.parse('2020-10-11').utc
+      old_update_uri = resource.update_uri
+      resource.update(updated_at: old_time)
+      # the throwaway resource is just to obtain another download_uri and ark to test for the new_ark and transformation
+      throwaway_resource = create(:resource)
+      expect(resource.download_uri).not_to eq(throwaway_resource.download_uri)
+
+      old_ark = CGI.unescape(resource.download_uri.match(%r{[^/]+$}).to_s)
+      new_ark = CGI.unescape(throwaway_resource.download_uri.match(%r{[^/]+$}).to_s)
+
+      DevOps::DownloadUri.update(doi: resource.identifier.to_s, old_ark: old_ark, new_ark: new_ark)
+
+      resource.identifier.resources.each do |res|
+        expect(res.download_uri).to eq(throwaway_resource.download_uri)
+        expect(res.update_uri).not_to eq(old_update_uri)
+        expect(res.update_uri[-28..]).to eq(old_update_uri[-28..]) # last (doi) of string should be the same
+        expect(res.update_uri).to include('/cdl_dryad/') # because we're always moving into that collection
+        expect(res.updated_at).to eq(old_time)
+      end
+    end
+  end
 end

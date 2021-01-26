@@ -1,94 +1,34 @@
 <%# locals: ds_identifiers %>
 <table class="c-lined-table">
   <tr class="c-lined-table__head">
-    <th class="c-admin-table <%= sort_display('title', @sort_column) %>" colspan="2">
-      <%= sort_by 'title', title: 'Title', current_column: @sort_column %>
+    <th class="c-admin-table <%= sort_display('title') %>" colspan="2">
+      <%= sortable_column_head sort_field: 'title', title: 'Title' %> 
     </th>
-    <th class="c-admin-table <%= sort_display('status', @sort_column) %>" colspan="2">
-      <%= sort_by 'status', title: 'Status', current_column: @sort_column %>
+    <th class="c-admin-table <%= sort_display('status') %>" colspan="2">
+      <%= sortable_column_head sort_field: 'status', title: 'Status' %>
     </th>
-    <th class="c-admin-table <%= sort_display('author_names', @sort_column) %>">
-      <%= sort_by 'author_names', title: 'Author', current_column: @sort_column %>
+    <th class="c-admin-table <%= sort_display('author_names') %>">
+      <%= sortable_column_head sort_field: 'author_names', title: 'Author' %>
     </th>
-    <th class="c-admin-table <%= sort_display('identifier', @sort_column) %>">
-      <%= sort_by 'identifier', title: 'DOI', current_column: @sort_column %>
+    <th class="c-admin-table <%= sort_display('identifier') %>">
+      <%= sortable_column_head sort_field: 'identifier', title: 'DOI' %>
     </th>
-    <th class="c-admin-table <%= sort_display('updated_at', @sort_column) %>" colspan="2">
-      <%= sort_by 'updated_at', title: 'Last Modified', current_column: @sort_column %>
+    <th class="c-admin-table <%= sort_display('updated_at') %>" colspan="2">
+      <%= sortable_column_head sort_field: 'updated_at', title: 'Last Modified' %>
     </th>
-    <th class="c-admin-table <%= sort_display('editor_name', @sort_column) %>">
-      <%= sort_by 'editor_name', title: 'Last modified by', current_column: @sort_column %>
+    <th class="c-admin-table <%= sort_display('editor_name') %>">
+      <%= sortable_column_head sort_field: 'editor_name', title: 'Last modified by' %>
     </th>
-    <th class="c-admin-table <%= sort_display('storage_size', @sort_column) %>">
-      <%= sort_by 'storage_size', title: 'Size', current_column: @sort_column %>
+    <th class="c-admin-table <%= sort_display('storage_size') %>">
+      <%= sortable_column_head sort_field: 'storage_size', title: 'Size' %>
     </th>
-    <th class="c-admin-table <%= sort_display('publication_date', @sort_column) %>" colspan="2">
-      <%= sort_by 'publication_date', title: 'Publication Date', current_column: @sort_column %>
+    <th class="c-admin-table <%= sort_display('publication_date') %>" colspan="2">
+      <%= sortable_column_head sort_field: 'publication_date', title: 'Publication Date' %>
     </th>
   </tr>
 
   <% datasets.each do |dataset| %>
-    <tr class="c-lined-table__row">
-      <td class="c-admin-hide-border-right">
-        <% if dataset&.qualified_identifier %>
-            <%= link_to dataset.title, show_path(id: dataset.qualified_identifier), target: :blank %>
-        <% else %>
-          <%= dataset.title %>
-        <% end %>
-      </td>
-      <td class="c-admin-hide-border-left" id="js-edit-dataset-button-column-<%= dataset.resource_id %>">
-        <%# only with permission and not being messed with or in_progress or they're the ones futzing with it and making it in progress, lockout other concurrent editing %>
-        <% if (dataset.resource&.permission_to_edit?(user: current_user) && dataset.resource_state == 'submitted') ||
-            (dataset.resource_state == 'in_progress' && dataset.resource.current_editor_id == current_user.id)
-        %>
-          <%= render partial: 'stash_engine/admin_datasets/edit_dataset_button', locals: { resource_id: dataset.resource_id } %>
-        <% end %>
-          <%= render partial: 'stash_engine/admin_datasets/show_stats_button', locals: { resource_id: dataset.resource_id } %>
-      </td>
-      <td class="c-admin-hide-border-right" id="js-curation-state-<%= dataset.identifier_id %>">
-	  <% if (dataset.resource_state == 'error') %>
-	      Merritt Error
-	  <% elsif (dataset.resource_state == 'processing') %>
-	      Processing
-	  <% else %>
-              <%= StashEngine::CurationActivity.readable_status(dataset.status) %>
-	  <% end %>
-      </td>
-      <td class="c-admin-hide-border-left">
-        <% if current_user.superuser? && dataset.resource_state == 'submitted' %>
-          <%= form_tag({ controller: '/stash_engine/admin_datasets',
-                         action: 'curation_activity_popup', id: dataset.resource_id },
-                         method: :get, remote: true) do -%>
-            <button class="c-admin-edit-icon" aria-label="Update status" alt="Update status">
-              <i class="fa fa-pencil" aria-hidden="true"></i>
-            </button>
-          <% end %>
-        <% end %>
-      </td>
-      <td>
-        <% if (dataset&.author_names&.length || 0) > 50 %>
-          <%= "#{dataset.author_names[0..49]} ..." %>
-        <% else %>
-          <%= dataset.author_names %>
-        <% end %>
-      </td>
-      <td><%= dataset.identifier %></td>
-      <td class="c-admin-hide-border-right" id="js-curation-activity-date-<%= dataset.identifier_id %>">
-        <%= formatted_datetime(dataset.updated_at) %>
-      </td>
-      <td class="c-admin-hide-border-left">
-        <%= form_tag({ controller: '/stash_engine/admin_datasets', action: 'activity_log', id: dataset.identifier_id }, method: :get) do -%>
-          <button class="c-admin-edit-icon" aria-label="View Activity Log" alt="View Activity Log">
-            <i class="fa fa-clock-o" aria-hidden="true"></i>
-          </button>
-        <% end %>
-      </td>
-      <td id="js-curation-activity-user-<%= dataset.identifier_id %>"><%= dataset.editor_name %></td>
-      <td><%= filesize(dataset.storage_size) %></td>
-      <td class="c-admin" id="js-embargo-state-<%= dataset.identifier_id %>">
-        <%= formatted_date(dataset.publication_date) %>
-      </td>
-    </tr>
+    <%= render partial: 'stash_engine/admin_datasets/datasets_row', locals: { dataset: dataset } %>
   <% end %>
   <% if datasets.empty? %>
     <tr><td colspan="8">

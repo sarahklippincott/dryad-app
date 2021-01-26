@@ -10,20 +10,11 @@ Adding a New Tenant
 ====================
 
 Tasks:
-- In the `dryad-config` repo, add a config file for the tenant
-- In the `dryad-app` repo, add a logo
+- In the `config/tenants` directory, add a config file for the tenant
+- In the `app/assets/images/tenants` directory, add a logo
 - After the new configuration goes live, in the production database,
   update `tenant_id` for all entries in `stash_engine_users` who have emails with the
   institutional domain name 
-
-Configuration Files
----------------------
-
-Dryad’s tenant-specific configuration files and most other
-configuration files are contained in our private GitHub repository at
-https://github.com/cdlib/dryad-config.git. The configuration files are
-automatically updated and symlinked into the the main Dryad app when
-using the Capistrano deployment script.
 
 Prerequisites and Dependencies for a New Tenant
 ------------------------------------------------
@@ -89,16 +80,19 @@ everyone else.  There are sub-keys for shoulder, account, password,
 id_scheme (always doi right now).
 
 authentication:
-- `authentication_strategy` is always shibboleth right now.  There are
+- `authentication_strategy` is usually shibboleth right now.  There are
   other keys and values under authentication depending on the strategy
   chosen.
-- `entity_id` can normally be found by looking up the institution’s from
-  the InCommon config file. On stage/prod, this is
-  `/apps/dryad/local/shibboleth-sp/var/InCommon-metadata.xml`. If the
-  institution is not part of InCommon, the shibboleth for that
-  institution may be configured separately. Look at the files in prod
-  directory `/apps/dryad/local/shibboleth-sp/etc/shibboleth`.
-- `entity_domain` is simply the domain portion of the entity_id
+  - `entity_id` can normally be found by looking up the institution’s from
+    the InCommon config file. On stage/prod, this is
+    `/apps/dryad/local/shibboleth-sp/var/InCommon-metadata.xml`. If the
+    institution is not part of InCommon, the shibboleth for that
+    institution may be configured separately. Look at the files in prod
+    directory `/apps/dryad/local/shibboleth-sp/etc/shibboleth`.
+  - `entity_domain` is simply the domain portion of the entity_id
+- A strategy of `author_match` allows login by that institution without
+  shibboleth validation, but requires an author to be from the same tenant
+  (an author ROR institution should match).
 
 `default_license` is either cc0 or cc_by right now but might be set to
 other licenses configured at the application-level with some text and

@@ -4,7 +4,7 @@ require 'stash/indexer/solr_indexer'
 require_relative '../../../../stash_datacite/lib/stash/indexer/indexing_resource'
 
 module StashEngine
-  class Resource < ActiveRecord::Base # rubocop:disable Metrics/ClassLength
+  class Resource < ApplicationRecord # rubocop:disable Metrics/ClassLength
     # ------------------------------------------------------------
     # Relations
 
@@ -27,6 +27,7 @@ module StashEngine
     has_many :repo_queue_states, class_name: 'StashEngine::RepoQueueState', dependent: :destroy
     has_many :download_histories, class_name: 'StashEngine::DownloadHistory', dependent: :destroy
     has_many :zenodo_copies, class_name: 'StashEngine::ZenodoCopy', dependent: :destroy
+    # download tokens are for Merritt version downloads with presigned URL caching
     has_one :download_token, class_name: 'StashEngine::DownloadToken', dependent: :destroy
 
     accepts_nested_attributes_for :curation_activities
@@ -49,6 +50,10 @@ module StashEngine
         new_resource.meta_view = false
         new_resource.file_view = false
 
+        # this is a new rubocop cop complaint (must not be locked to a version of testing).
+        # I think this may have been done for some reason (two separate loops) because of mutation or errors, IDK.
+        # I'm not going to go back and revise right now.
+        # rubocop:disable Style/CombinableLoops
         %i[file_uploads software_uploads].each do |meth|
           new_resource.public_send(meth).each do |file|
             raise "Expected #{new_resource.id}, was #{file.resource_id}" unless file.resource_id == new_resource.id
@@ -66,6 +71,7 @@ module StashEngine
           resources = new_resource.public_send(meth).select { |ar_record| ar_record.file_state == 'deleted' }
           resources.each(&:delete)
         end
+        # rubocop:enable Style/CombinableLoops
       end)
     end
 
@@ -262,6 +268,17 @@ module StashEngine
       Resource.software_upload_dir_for(id)
     end
 
+    # tells whether software uploaded to zenodo for this resource has been published or not
+    def software_published?
+      zc = zenodo_copies.where(copy_type: 'software_publish', state: 'finished')
+      zc.count.positive?
+    end
+
+    def software_submitted?
+      zc = zenodo_copies.where(copy_type: 'software', state: 'finished')
+      zc.count.positive?
+    end
+
     # gets the latest files that are not deleted in db, current files for this version
     def current_file_uploads(my_class: StashEngine::FileUpload)
       subquery = my_class.where(resource_id: id).where("file_state <> 'deleted' AND " \
@@ -330,6 +347,14 @@ module StashEngine
 
     def files_changed?
       file_uploads.where(file_state: %w[created deleted]).count.positive?
+    end
+
+    def software_unchanged?
+      !software_changed?
+    end
+
+    def software_changed?
+      software_uploads.where(file_state: %w[created deleted]).count.positive?
     end
 
     # ------------------------------------------------------------
@@ -511,6 +536,10 @@ module StashEngine
     end
     private :increment_version!
 
+    def previous_resource
+      StashEngine::Resource.where(identifier_id: identifier_id).where('id < ?', id).order(id: :desc).first
+    end
+
     # ------------------------------------------------------------
     # Ownership
 
@@ -534,7 +563,8 @@ module StashEngine
       user.superuser? ||
         user_id == user.id ||
         (user.tenant_id == tenant_id && user.role == 'admin') ||
-        user.journals_as_admin.include?(identifier&.journal)
+        user.journals_as_admin.include?(identifier&.journal) ||
+        (user.journals_as_admin.present? && identifier&.journal.blank?)
     end
 
     # have the permission to edit
@@ -649,6 +679,14 @@ module StashEngine
     end
 
     # -----------------------------------------------------------
+    # Title
+
+    # Title without "Data from:"
+    def clean_title
+      title.delete_prefix('Data from:').strip
+    end
+
+    # -----------------------------------------------------------
     # SOLR actions for this resource
 
     def submit_to_solr
@@ -687,9 +725,13 @@ module StashEngine
     # -----------------------------------------------------------
     # Handle the 'submitted' state (happens after successful Merritt submission)
     def prepare_for_curation
+      # gets last resource
       prior_version = identifier.resources.includes(:curation_activities).where.not(id: id).order(created_at: :desc).first if identifier.present?
-      # Determine if the curator or author is the appropriate attribution
-      attribution = prior_version.present? && prior_version.current_curation_activity.curation? ? current_editor_id : user_id
+
+      # try to assign the same person as immediately previous activity, otherwise prefer editor_id and then user_id from resource
+      cur_act = StashEngine::CurationActivity.joins(:resource).where('stash_engine_resources.identifier_id = ?', identifier_id)
+        .order(id: :desc).first
+      attribution = (cur_act.nil? ? (current_editor_id || user_id) : cur_act.user_id)
       curation_to_submitted(prior_version, attribution)
     end
 
@@ -697,22 +739,21 @@ module StashEngine
       # Determine which submission status to use, :submitted or :peer_review status (if this is the inital
       # version and the journal needs it)
       status = (hold_for_peer_review? ? 'peer_review' : 'submitted')
-      # Update the user in the auto-created :in_progress activity as its set to the author by default
-      current_curation_activity.update(user_id: attribution) if current_curation_activity.present?
+
       # Generate the :submitted status
       # This will usually have the side effect of sending out notification emails to the author/journal
       curation_activities << StashEngine::CurationActivity.create(user_id: attribution, status: status)
-      curation_to_curation(prior_version, attribution) unless prior_version.blank?
+      curation_to_curation(prior_version) unless prior_version.blank?
     end
 
-    def curation_to_curation(prior_version, attribution)
+    def curation_to_curation(prior_version)
       return if prior_version.blank? || prior_version.current_curation_status.blank?
       # If the prior version was in author :action_required or :curation status we need to set it
       # back to :curation status. Also carry over the curators note so that it appears in the activity log
       return unless %w[action_required curation].include?(prior_version.current_curation_status)
 
-      curation_activities << StashEngine::CurationActivity.create(user_id: attribution, status: 'curation',
-                                                                  note: edit_histories.last&.user_comment || 'ready for curation')
+      curation_activities << StashEngine::CurationActivity.create(user_id: 0, status: 'curation',
+                                                                  note: 'system set back to curation')
     end
   end
 end

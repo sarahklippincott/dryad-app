@@ -5,14 +5,12 @@
 # The files are in Markdown format and named such as _about.html.md and _help.html.md
 
 # This example file may also be copied into your config directory for tests from dryad/dryad-config-example/tenants/localhost.yml .
-# You may need to re-copy this file to update to make tests work or possibly run ./symlink_config.sh again from root of application.
-# TODO: It would be good to re-examine this and make it individually symlinked or some other thing to avoid staleness from affecting
-# tests in confusing and hard to troubleshoot ways.
 
 default: &default
   enabled: true
   repository:
-    domain: localhost
+    # making this localhost.com some it WebMock picks up invalid requests outside my local machine
+    domain: http://localhost.com
     endpoint: "http://localhost:39001/sword/collection/stash"
     username: "stash_submitter"
     password: "correct​horse​battery​staple"

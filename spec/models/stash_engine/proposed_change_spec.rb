@@ -21,9 +21,9 @@ module StashEngine
         approved: false,
         authors: [
           { 'ORCID' => 'http://orcid.org/0000-0002-0955-3483', 'given' => 'Julia M.', 'family' => 'Petersen',
-            'affiliation' => ['name' => 'Hotel California'] },
+            'affiliation' => [{ 'name' => 'Hotel California' }] },
           { 'ORCID' => 'http://orcid.org/0000-0002-1212-2233', 'given' => 'Michelangelo', 'family' => 'Snow',
-            'affiliation' => ['name' => 'Catalonia'] }
+            'affiliation' => [{ 'name' => 'Catalonia' }] }
         ].to_json,
         provenance: 'crossref',
         publication_date: Date.new(2018, 8, 13),
@@ -95,8 +95,8 @@ module StashEngine
         expect(@resource.title).to eql(old_title)
         expect(@resource.identifier.internal_data.select { |id| id.data_type == 'publicationName' }.first.value).to eql(@params[:publication_name])
         expect(@resource.related_identifiers.select do |id|
-          id.related_identifier_type == 'doi' && id.relation_type == 'issupplementto'
-        end.first&.related_identifier).to eql(@params[:publication_doi])
+          id.related_identifier_type == 'doi' && id.relation_type == 'cites'
+        end.first&.related_identifier).to eql(StashDatacite::RelatedIdentifier.standardize_doi(@params[:publication_doi]))
 
         @proposed_change.reload
         expect(@proposed_change.approved).to eql(true)

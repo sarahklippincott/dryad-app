@@ -16,7 +16,7 @@ module StashApi
     def show
       v = Version.new(resource_id: params[:id])
       respond_to do |format|
-        format.json { render json: v.metadata_with_links }
+        format.any { render json: v.metadata_with_links }
         res = @stash_resources.first
         StashEngine::CounterLogger.general_hit(request: request, resource: res) if res
       end
@@ -26,7 +26,7 @@ module StashApi
     def index
       versions = paged_versions_for_dataset
       respond_to do |format|
-        format.json { render json: versions }
+        format.any { render json: versions }
       end
     end
 
@@ -40,7 +40,7 @@ module StashApi
             redirect_to stash_url_helpers.landing_show_path(id: res.identifier_str, big: 'showme') # if it's an async
           end
         else
-          render text: 'forbidden', status: 403
+          render plain: 'forbidden', status: 403
         end
       else
         render text: 'download for this version is unavailable', status: 404
@@ -53,7 +53,7 @@ module StashApi
       id = StashEngine::Identifier.find_with_id(params[:dataset_id])
       limited_resources = id.resources.visible_to_user(user: @user)
       all_count = limited_resources.count
-      results = limited_resources.limit(page_size).offset(page_size * (page - 1))
+      results = limited_resources.limit(DEFAULT_PAGE_SIZE).offset(DEFAULT_PAGE_SIZE * (page - 1))
       results = results.map { |i| Version.new(resource_id: i.id).metadata_with_links }
       page_output(all_count, results)
     end

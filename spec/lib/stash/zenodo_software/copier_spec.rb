@@ -27,6 +27,7 @@ module Stash
         my_path = @file.calc_file_path[0..-(File.basename(@file.calc_file_path).length + 1)]
         FileUtils.mkdir_p(my_path)
         FileUtils.touch(@file.calc_file_path)
+        WebMock.disable_net_connect!(allow_localhost: true)
       end
 
       after(:each) do
@@ -104,7 +105,7 @@ module Stash
 
           it 'rejects a data submission that is supposed to be software submission' do
             # I need to add the following item to get it past a different prerequisite for a different count
-            @resource.zenodo_copies << create(:zenodo_copy, copy_type: 'software')
+            @resource.zenodo_copies << create(:zenodo_copy, copy_type: 'software', identifier_id: @resource.identifier.id)
 
             @zc.update(copy_type: 'data')
 
@@ -219,7 +220,7 @@ module Stash
             stub_get_existing_ds(deposition_id: @zc2.deposition_id)
             allow(@zsc).to receive(:publish_dataset).and_return(nil)
             @zsc.add_to_zenodo
-            expect(@resource.related_identifiers.map(&:related_identifier).first).to eq("10.5072/zenodo.#{@zc.deposition_id}")
+            expect(@resource.related_identifiers.map(&:related_identifier).first).to eq("https://doi.org/10.5072/zenodo.#{@zc.deposition_id}")
           end
         end
 

@@ -31,13 +31,12 @@ module StashApi
       check_file_size(file_upload: fu) { return }
       file = StashApi::File.new(file_id: fu.id) # parse file display object
       respond_to do |format|
-        format.json { render json: file.metadata, status: 201 }
+        format.any { render json: file.metadata, status: 201 }
       end
     end
 
     private
 
-    # rubocop:disable Metrics/CyclomaticComplexity
     def validate_url(url)
       url_translator = Stash::UrlTranslator.new(url)
       validator = StashEngine::UrlValidator.new(url: url_translator.direct_download || url)
@@ -51,9 +50,8 @@ module StashApi
       end
       validation_hash
     end
-    # rubocop:enable Metrics/CyclomaticComplexity
 
-    # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity
+    # rubocop:disable Metrics/AbcSize
     def skipped_validation_hash(_hsh)
       unless params[:size] && params[:mimeType] && params[:url]
         (render json: { error: 'You must supply a size, mimetype and url.' }.to_json, status: 403) && yield
@@ -64,7 +62,7 @@ module StashApi
       { resource_id: @resource.id, url: params[:url], status_code: 200, file_state: 'created',
         upload_file_name: my_path, upload_content_type: params[:mimeType], upload_file_size: params[:size] }
     end
-    # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity
+    # rubocop:enable Metrics/AbcSize
 
     def require_correctly_formatted_url
       (render json: { error: 'The URL you supplied is invalid.' }.to_json, status: 403) unless correctly_formatted_url?(params[:url])

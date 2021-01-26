@@ -1,7 +1,7 @@
 require_relative '../../../../stash_datacite/app/models/stash_datacite/affiliation'
 
 module StashEngine
-  class Author < ActiveRecord::Base
+  class Author < ApplicationRecord
 
     include StashEngine::Concerns::ResourceUpdated
 
@@ -23,7 +23,6 @@ module StashEngine
       where(resource_id: resource_id).where.not(author_email: nil).order(:id)&.first
     end
 
-    # rubocop:disable Metrics/CyclomaticComplexity
     def ==(other)
       return false unless other.present?
       return true if author_orcid.present? && other.author_orcid == author_orcid
@@ -32,7 +31,6 @@ module StashEngine
       other.author_last_name&.strip&.downcase == author_last_name&.strip&.downcase &&
         other.author_first_name&.strip&.downcase == author_first_name&.strip&.downcase
     end
-    # rubocop:enable Metrics/CyclomaticComplexity
 
     def author_full_name
       [author_last_name, author_first_name].reject(&:blank?).join(', ')
@@ -59,6 +57,24 @@ module StashEngine
       user.save
     end
     after_save :init_user_orcid
+
+    def orcid_invite_path
+      orcid_invite = StashEngine::OrcidInvitation.where(email: author_email, identifier_id: resource.identifier_id)&.first
+
+      # Ensure an invite exists -- it may not for a legacy dataset that never received invites,
+      # or if the author_email has changed since the original creation.
+      orcid_invite ||= StashEngine::OrcidInvitation.create(
+        email: author_email,
+        identifier_id: resource.identifier_id,
+        first_name: author_first_name,
+        last_name: author_last_name,
+        secret: SecureRandom.urlsafe_base64,
+        invited_at: Time.new.utc
+      )
+
+      path = StashEngine::Engine.routes.url_helpers.show_path(orcid_invite.identifier.to_s, invitation: orcid_invite.secret)
+      orcid_invite.landing(path)
+    end
 
     private
 

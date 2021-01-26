@@ -12,8 +12,8 @@ from Ruby 2.4 to Ruby 2.6.
 
 - [ ] Remove old versions of Ruby junk in the local directory
 ```shell script
-cd /dryad/local/bin
-rm bundle cap capify erb gem irb links passenger passenger-* rackup rake rdoc ri ruby update_rubygems
+cd /dryad/local
+mv bin bin-old
 ```
 
 - [ ] Compile and install the new Ruby version
@@ -36,20 +36,17 @@ rm -rf ruby-2.6.6
 - [ ] Install some basic gems
 ```shell script
 gem update --system
-gem install bundler -v 1.17.3
-# I don't believe you need these, but they wouldn't hurt to install at same versions as your gemfile.lock
-# gem install capistrano -v 3.14.1
-# gem install capistrano-bundler -v 1.6.0
-# gem install capistrano-passenger -v 0.2.0
-# gem install capistrano-rails -v 1.5.0
+gem install bundler -v 2.1.4
 ```
 
 ## Get Capistrano Working
 
 - [ ] Set environment variables for your environment, change as necessary
 ```shell script
-export MY_BRANCH=master
+export MY_BRANCH=main
 export RAILS_ENV=development
+# the capistrano environment may be things like stage1 and refers to the server
+export CAP_ENV=development
 ```
 
 - [ ] Mess with your releases directory so you can use capistrano with this version of Ruby/Gems
@@ -62,21 +59,22 @@ cd ~/apps/ui/
 unlink current
 ln -s /apps/dryad/apps/ui/releases/temp-cap current
 cd current
-bundle  # takes a while installing gems
+bundle install --deployment
+# You may get weird errors saying a gem can't be installed because it's not the default.
+# If that happens, try an example such as below to set the gem you need as the default.
+# gem install --default -v1.0.1  etc
 ```
 
-- [ ] Symlink the files, otherwise capistrano task fails, change the deployment host in commands below.
+- [ ] Symlink the shared files, otherwise capistrano task fails, change the deployment host in commands below.
 ```shell script
-cap development deploy:my_linked_files
-cap development deploy:symlink_shared
-cap development deploy:update_config BRANCH="$MY_BRANCH"
+bundle exec cap $CAP_ENV deploy:symlink:shared
 ```
 
 ## Deploy with Capistrano
 
 - [ ] Now capistrano should be able to deploy, change deploy host below (development there)
 ```shell script
-cap development deploy BRANCH="$MY_BRANCH"
+bundle exec cap $CAP_ENV deploy BRANCH="$MY_BRANCH"
 ```
 
 - [ ] Watch out for disk filling up.  You can go delete the temp-cap directory you created earlier here. Maybe clean
@@ -91,7 +89,7 @@ mv stash-notifier stash-notifier-old
 cp -avr ~/apps/ui/current/stash/stash-notifier stash-notifier
 cp "stash-notifier-old/state/${RAILS_ENV}.json" stash-notifier/state/
 cd stash-notifier
-bundle
+bundle install
 ```
 
 - [ ] Either check or test the stash-notifier to be sure it's working

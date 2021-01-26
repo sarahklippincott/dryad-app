@@ -5,8 +5,8 @@ require File.join(File.dirname(__FILE__), 'lib', 'bundler_help.rb')
 # Rails
 
 gem 'mysql2', '~> 0.5.3'
-gem 'rails', '4.2.11'
-gem 'rb-readline'
+gem 'rails', '~> 5.2'
+gem 'rb-readline', '~> 0.5.5', require: false
 
 # ############################################################
 # Local engines
@@ -26,8 +26,10 @@ end
 gem 'capistrano', '~> 3.11'
 gem 'capistrano-passenger'
 gem 'capistrano-rails', '~> 1.4'
-gem 'passenger', '~> 6.0.4'
-gem 'rubocop', '~> 0.85.1'
+gem 'passenger', '~> 6.0.5'
+gem 'rubocop', '~> 0.90.0'
+# not currently used for our simple case and because of some problems
+# gem 'uc3-ssm', git: 'https://github.com/CDLUC3/uc3-ssm', branch: 'main'
 
 # ############################################################
 # UI
@@ -35,7 +37,7 @@ gem 'rubocop', '~> 0.85.1'
 # TODO: why do we have uglifier AND yui-compressor?
 # asset pipeline problems with Joels pre-minified CSS/JS caused errors with uglifier and had to revert to yui-compressor
 
-gem 'coffee-rails', '~> 4.1.0'
+gem 'coffee-rails', '~> 4.1'
 gem 'jquery-rails'
 gem 'sass-rails', '~> 5.0'
 gem 'therubyracer', platforms: :ruby
@@ -47,9 +49,11 @@ gem 'yui-compressor'
 # ############################################################
 # Misc
 
+gem 'bootsnap', require: false
 gem 'exception_notification'
 gem 'httparty'
 gem 'jbuilder', '~> 2.0'
+gem 'net-sftp'
 gem 'stripe'
 
 # #########################
@@ -61,14 +65,12 @@ gem 'http'
 # Development and testing
 
 group :development, :local_dev do
-  gem 'colorize', '~> 0.8'
-  gem 'web-console', '~> 2.0'
+  gem 'colorize'
+  gem 'web-console'
   # gem 'httplog', not needed always, but good for troubleshooting HTTP requests to outside http services from the app
 end
 
 group :test do
-  # passenger doesn't work with tests with capybara, but puma does. and I believe is a better alternative than webrick and is a bit faster
-  gem 'puma'
   # Capybara aims to simplify the process of integration testing Rack applications, such as Rails, Sinatra or Merb (https://github.com/teamcapybara/capybara)
   gem 'capybara'
   # Automatically create snapshots when Cucumber steps fail with Capybara and Rails (http://github.com/mattheworiordan/capybara-screenshot)
@@ -97,6 +99,7 @@ group :test do
   gem 'oai'
   # RSpec for Rails (https://github.com/rspec/rspec-rails)
   gem 'rspec-collection_matchers'
+  gem 'rspec-github', require: false
   gem 'rspec-rails'
   # The next generation developer focused tool for automated testing of webapps (https://github.com/SeleniumHQ/selenium)
   gem 'selenium-webdriver', '~> 3.142.0'
@@ -106,11 +109,6 @@ group :test do
   gem 'simplecov', require: false
   # used by some of the engines and for some reason causes errors without it in the main Gemfile, also.
   gem 'simplecov-console', require: false
-  # Rails application preloader (https://github.com/rails/spring)
-  # gem 'spring'
-  # rspec command for spring (https://github.com/jonleighton/spring-commands-rspec)
-  # gem 'spring-commands-rspec'
-  # Library for stubbing HTTP requests in Ruby. (http://github.com/bblimke/webmock)
   gem 'webmock'
 end
 
@@ -118,7 +116,13 @@ group :development, :test, :local_dev do
   gem 'binding_of_caller'
   # Ruby fast debugger - base + CLI (http://github.com/deivid-rodriguez/byebug)
   gem 'byebug'
+  gem 'listen'
   gem 'pry'
   gem 'pry-rails'
   gem 'pry-remote', require: 'pry-remote'
+  gem 'puma'
+  # Rails application preloader (https://github.com/rails/spring), says not to install in production
+  gem 'spring'
+  # rspec command for spring (https://github.com/jonleighton/spring-commands-rspec)
+  gem 'spring-commands-rspec'
 end

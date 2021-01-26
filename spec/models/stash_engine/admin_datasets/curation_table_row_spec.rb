@@ -46,6 +46,12 @@ module StashEngine
           @datasets = StashEngine::AdminDatasets::CurationTableRow.where(params: {}, tenant: @tenant)
           expect(@datasets.length).to eql(2)
         end
+
+        it 'returns only one record when id requested specifically' do
+          dataset = StashEngine::AdminDatasets::CurationTableRow.where(params: {}, tenant: nil,
+                                                                       identifier_id: @identifiers[1].id).first
+          expect(dataset.identifier_id).to eq(@identifiers[1].id)
+        end
       end
     end
   end
