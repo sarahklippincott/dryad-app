@@ -138,7 +138,7 @@ StashEngine::Engine.routes.draw do
   # testing uploads
   get 'test_uploads', to: 'test_uploads#index'
   # match 'test_uploads', to: 'test_uploads#presignupload', via: %i[get post put]
-  # match 'presign_upload', to: 'test_uploads#presign_upload', via: %i[get post put patch]
+  match 'presign_upload', to: 'test_uploads#presign_upload', via: %i[get post put patch]
 
 end
 # rubocop:enable Metrics/BlockLength
