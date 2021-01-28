@@ -27,9 +27,11 @@
       awsRegion: "<%= APP_CONFIG[:s3][:region] %>",
       awsSignatureVersion: '4',
       computeContentMd5: true,
-      cryptoMd5Method: function (data) { return AWS.util.crypto.md5(data, 'base64'); },
-      cryptoHexEncodedHash256: function (data) { return AWS.util.crypto.sha256(data, 'hex'); }
+      cryptoMd5Method: data => { return AWS.util.crypto.md5(data, 'base64'); },
+      cryptoHexEncodedHash256: data => { return AWS.util.crypto.sha256(data, 'hex'); }
     };
+
+    const md5Id = Crypto.createHash('MD5').update(fileObj.name).digest('hex');
 
     /*
      ---- I tried both versions of these hash methods and I could only get the AWS ones to work, though it seems
@@ -48,8 +50,15 @@
       const addConfig = {
         name: "test01/" + fileObj.name,
         file: fileObj,
-        progress: progressValue => console.log('Progress', progressValue),
-        complete: (_xhr, awsKey) => console.log('Complete!'),
+        contentType: fileObj.type,
+        // progress: progressValue => console.log('Progress', progressValue),
+        progress: progressValue => {
+          $('#progress_' + md5Id).attr('value', progressValue);
+        },
+        // complete: (_xhr, awsKey) => console.log('Complete!'),
+        complete: (_xhr, awsKey) => {
+          $('#progress_' + md5Id).replaceWith("<div>File " + fileObj.name + " uploaded</div>");
+        }
       }
 
       // The bucket and some other properties may want to be be changed per upload
@@ -73,10 +82,12 @@
     // files is a FileList of File objects. List some properties.
     var output = [];
     for (var i = 0, f; f = files[i]; i++) {
+      let md5 = Crypto.createHash('MD5').update(f.name).digest('hex');
       output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
           f.size, ' bytes, last modified: ',
           f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
-          '</li>');
+          '</li>',
+          '<br/><progress value="0.0" max="1.0" id="progress_', md5 ,'"></progress><br/>');
       // test();
       evaporateIt(f);
     }

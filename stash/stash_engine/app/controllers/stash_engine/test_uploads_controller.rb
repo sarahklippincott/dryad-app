@@ -2,6 +2,9 @@ require_dependency 'stash_engine/application_controller'
 
 module StashEngine
   class TestUploadsController < ApplicationController
+    before_action :require_login, only: %i[index]
+    before_action :ajax_require_current_user, only: %i[presign_upload]
+
     # GET /tenants
     def index
       # show the page
