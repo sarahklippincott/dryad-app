@@ -128,4 +128,5 @@ Rails.application.routes.draw do
       to: redirect{ |p, req| "stash/dataset/#{p[:doi_prefix]}/#{p[:doi_suffix]}" }
 
   get '/stash/resources/:id/upload', to: 'upload_files#index'
+  get '/react_test', to: 'upload_files#test'
 end
