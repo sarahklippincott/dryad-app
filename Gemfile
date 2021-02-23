@@ -61,6 +61,9 @@ gem 'stripe'
 gem 'down'
 gem 'http'
 
+gem 'webpacker'
+gem 'react-rails'
+
 # ############################################################
 # Development and testing
 

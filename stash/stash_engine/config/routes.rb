@@ -6,7 +6,7 @@ StashEngine::Engine.routes.draw do
   resources :resources do
     member do
       get 'review'
-      get 'upload'
+      # get 'upload'
       get 'upload_manifest'
       get 'up_code'
       get 'up_code_manifest'
