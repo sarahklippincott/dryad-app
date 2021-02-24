@@ -19,6 +19,13 @@ module StashEngine
 
     def react_basics; end
 
+    # just returns JSON response with current user information on GET
+    def react_user
+      respond_to do |format|
+        format.json { render json: current_user }
+      end
+    end
+
     def migrate_data_mail
       return unless validate_form_email
 

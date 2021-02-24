@@ -1,8 +1,10 @@
 <%# javascript_tag 'application' %>
 <%= javascript_pack_tag 'application' %>
 
-<p>Hi there, this is before react</p>
+<p>Hi there, this is before react loads components</p>
 
 <%= react_component("HelloWorld", { greeting: "Hello from react-rails." }) %>
 
-<p>This is after react component.</p>
+<%= react_component("UserCheck") %>
+
+<p>This is after react components.</p>
