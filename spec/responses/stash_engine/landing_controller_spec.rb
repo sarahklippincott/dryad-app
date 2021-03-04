@@ -105,5 +105,26 @@ module StashEngine
       expect(response.body).not_to include(res2.file_uploads.where(file_state: 'created').first.upload_file_name)
     end
 
+    it 'loads the react component' do
+      # installed https://github.com/bobf/rspec-html to parse html and make matchers available to rspec
+      # but it's annoying and limited
+      # So also using Nokogiri to parse and look at the DOM
+      # http://ruby.bastardsbook.com/chapters/html-parsing/
+
+      resp = get "/stash/react_basics"
+      expect(resp).to eq(200)
+
+      # this is the rspec-html basic parsing
+      expect(document.body.div("data-react-class" => 'HelloWorld')).to exist
+
+      # this is all nokogiri parsing of the DOM
+      html_doc = Nokogiri::HTML(body)
+      react_component = html_doc.css("div[data-react-class='HelloWorld']")
+      expect(react_component).to be_a(Nokogiri::XML::NodeSet)
+
+      props = JSON.parse(react_component.attr('data-react-props').to_s)
+      expect(props['greeting']).to eq("Hello from react-rails.")
+    end
+
   end
 end

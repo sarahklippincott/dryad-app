@@ -10,6 +10,7 @@ gem 'rb-readline', '~> 0.5.5', require: false
 
 gem 'webpacker'
 gem 'react-rails', '~> 2.6.1'
+gem 'rspec-html'
 
 # ############################################################
 # Local engines
