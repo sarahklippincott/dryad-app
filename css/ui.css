@@ -3303,7 +3303,7 @@ datalist {
 .o-heading__level1-home {
   text-align: center; }
 
-.o-heading__level2, .o-heading__level2-login-with, .c-uploadwidget--data header h2,
+.o-heading__level2, .o-heading__level2-login-with, .c-uploadmodal__textarea-url-label, .c-uploadwidget--data header h2,
 .c-uploadwidget--software header h2,
 .c-uploadwidget--supplemental header h2, .o-heading__level2-why-share, .o-heading__level2-sharing-steps, .o-heading__level2-why-side {
   margin: 12px 0 20px;
@@ -5613,6 +5613,26 @@ html.no-details .o-showhide__summary {
 
 .c-manifest-table__actions-col {
   width: 17%; }
+
+.c-uploadmodal {
+  border: none; }
+
+.c-uploadmodal__textarea-url-label {
+  display: block;
+  margin-top: 0;
+  margin-bottom: 20px; }
+
+.c-uploadmodal__textarea-url {
+  width: 100%;
+  height: 200px; }
+
+.c-uploadmodal__text-content {
+  margin-top: 20px;
+  margin-bottom: 20px; }
+
+.c-uploadmodal__button-validate {
+  display: block;
+  margin-top: 20px; }
 
 .c-uploadwidgets {
   display: grid;
