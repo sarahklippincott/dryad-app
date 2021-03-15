@@ -1,4 +1,5 @@
 # require 'stash/indexer/indexing_resource'
+require 'stash/aws/s3'
 require 'stash/indexer/solr_indexer'
 # the following is required to make our wonky tests work and may break if we move stuff around
 require_relative '../../../../stash_datacite/lib/stash/indexer/indexing_resource'
@@ -107,9 +108,14 @@ module StashEngine
       Identifier.destroy(identifier_id)
     end
 
+    def remove_s3_temp_files
+      Stash::Aws::S3.delete_dir(s3_key: s3_dir_name(type: 'base'))
+    end
+
     after_create :init_state_and_version, :update_stash_identifier_last_resource
     # for some reason, after_create not working, so had to add after_update
     after_update :update_stash_identifier_last_resource
+    before_destroy :remove_s3_temp_files
     after_destroy :remove_identifier_with_no_resources, :update_stash_identifier_last_resource
 
     # shouldn't be necessary but we have some stale data floating around
@@ -430,17 +436,25 @@ module StashEngine
       current_curation_activity.status
     end
 
-    # Date on which the user first submitted this dataset
-    # (for peer_review datasets, the date at which it came out of peer_review)
-    def submitted_date
-      curation_activities.order(:id).where("status = 'submitted' OR status = 'curation'")&.first&.created_at
-    end
-
     # Create the initial CurationActivity
     def init_curation_status
       curation_activities << StashEngine::CurationActivity.new(user_id: current_editor_id || user_id)
     end
     private :init_curation_status
+
+    # ------------------------------------------------------------
+    # Calculated dates
+
+    # Date on which the user first submitted this dataset
+    def submitted_date
+      curation_activities.order(:id).where("status = 'submitted' OR status = 'peer_review'")&.first&.created_at
+    end
+
+    # Date on which the curators first received this dataset
+    # (for peer_review datasets, the date at which it came out of peer_review)
+    def curation_start_date
+      curation_activities.order(:id).where("status = 'submitted' OR status = 'curation'")&.first&.created_at
+    end
 
     # ------------------------------------------------------------
     # Identifiers
@@ -719,6 +733,25 @@ module StashEngine
 
       zc = ZenodoCopy.create(state: 'enqueued', identifier_id: identifier_id, resource_id: id, copy_type: rep_type)
       ZenodoSoftwareJob.perform_later(zc.id)
+    end
+
+    # type can currently be data, software or supplemental
+    ALLOWED_UPLOAD_TYPES = { base: '', data: '/data', software: '/sfw',
+                             supplemental: '/supp', manifest: '/manifest' }.with_indifferent_access.freeze
+
+    # this is long and wonky because it creates unique bucket "directories" even if running multiple different
+    # development environments on either different servers or against different databases (local or not local)
+    def s3_dir_name(type: 'data')
+      raise 'Error, incorrect upload type' if ALLOWED_UPLOAD_TYPES[type].nil?
+      return "#{id}#{ALLOWED_UPLOAD_TYPES[type]}" if %w[production stage].include?(Rails.env)
+
+      db_host = Rails.configuration.database_configuration[Rails.env]['host']
+      if db_host.include?('localhost') || db_host.include?('127.0.0.1')
+        d = Digest::MD5.hexdigest("host-#{`hostname`.strip}")[0..7] # shorten to make less verbose for small number of servers
+        return "#{d}-#{id}#{ALLOWED_UPLOAD_TYPES[type]}"
+      end
+      d = Digest::MD5.hexdigest("db-#{db_host.strip}")[0..7]
+      "#{d}-#{id}#{ALLOWED_UPLOAD_TYPES[type]}"
     end
 
     private

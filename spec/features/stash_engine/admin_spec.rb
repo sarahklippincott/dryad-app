@@ -55,10 +55,19 @@ RSpec.feature 'Admin', type: :feature do
       expect(page).to have_css('input#user_comment')
     end
 
+    it 'does not allow editing a dataset from the curation page', js: true do
+      visit root_path
+      click_link('Admin')
+      expect(page).to have_text('Admin Dashboard')
+
+      expect(page).not_to have_css('button[title="Edit Dataset"]')
+    end
+
     it 'redirects to the dataset editing page, and the user is logged in, when requesting an edit link', js: true do
       sign_out
       @identifier.edit_code = Faker::Number.number(digits: 4)
       @identifier.save
+      @identifier.resources.first.current_resource_state.update(resource_state: 'in_progress')
       visit "/stash/edit/#{@identifier.identifier}/#{@identifier.edit_code}"
       expect(page).to have_text('Describe Your Dataset')
       expect(page).to have_text('Logout')
@@ -67,6 +76,7 @@ RSpec.feature 'Admin', type: :feature do
     it 'rejects an attempt to edit the dataset with an invalid edit_code', js: true do
       @identifier.edit_code = Faker::Number.number(digits: 4)
       @identifier.save
+      @identifier.resources.first.current_resource_state.update(resource_state: 'in_progress')
       visit "/stash/edit/#{@identifier.identifier}/bad-code"
       expect(page).to have_text('do not have permission to modify')
     end
