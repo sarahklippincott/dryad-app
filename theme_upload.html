@@ -74,59 +74,123 @@
 
 	<h1 class="o-heading__level1">Upload Your Files <span class="t-upload__heading-optional">(optional)</span></h1>
 
-		<h2 class="t-upload__choose-heading--active">Step 1: Choose your files</h2>
+  <p>Data is curated and preserved at Dryad. Software and supplemental information are preserved at Zenodo.</p>
 
-		<!-- Begin Choose Files Component -->
-		
-<div class="c-choose">
-	<div class="c-choose__drop o-drop">
-		Drag and drop files here<br/><br/>
-    or<br/><br/>
-    <input id="c-input__file" class="c-input__file" type="file" name="file" multiple>
-    <label class="c-input__file-label" for="c-input__file">Choose Files</label>
-	</div>
-	<div class="c-choose__label">
-	</div>
+  <!-- For testing this as a standalone component, uncomment the code on line #4 of this file to reveal a button for showing the modal. -->
+
+<!-- <button type="button" class="js-uploadmodal__button-show-modal">Show Modal</button> -->
+
+<dialog id="js-uploadmodal" class="c-uploadmodal">
+  <form method="dialog">
+    <label class="c-uploadmodal__textarea-url-label" for="c-uploadmodal__textarea-url">Enter URLs</label>
+    <textarea id="c-uploadmodal__textarea-url" class="c-uploadmodal__textarea-url" name="" placeholder="List file location URLs here"></textarea>
+    <div class="c-uploadmodal__text-content">Place each URL on a new line.</div>
+    <input type="checkbox" name="" id="js-uploadmodal__checkbox-confirm">
+    <label class="c-input__required-note" for="js-uploadmodal__checkbox-confirm">I confirm that no Personal Health Information or Sensitive Data are being uploaded with this submission.</label>
+    <button type="submit" id="js-uploadmodal__button-validate" class="c-uploadmodal__button-validate o-button__submit" disabled>Validate Files</button>
+  </form>
+</dialog>
+
+
+   <div class="c-uploadwidgets">
+    <section class="c-uploadwidget--data">
+  <header>
+    <img src="images/logo_dryad.svg" alt="Dryad">
+    <h2>Data</h2>
+  </header>
+  <b>Example 1, example 2, example 3</b>
+  <div class="c-choose">
+  <input id="c-input__file" class="c-input__file" type="file" name="file" multiple>
+  <label class="c-input__file-label" for="c-input__file">Choose Files</label>
 </div>
 
-		<!-- End Choose Files Component -->
+  <button type="button" class="js-uploadmodal__button-show-modal">Enter URLs</button>
+</section>
 
-    <div class="t-upload__container">
-		  <h2 class="t-upload__choose-heading">Step 2: Upload your files</h2>
-      <form class="o-button__inline-form" action="">
-        <button disabled class="o-button__undo">undo all changes</button>
-      </form>
-    </div>
-
-		<!-- Begin Upload Files Component -->
-		
-<div class="c-upload">
-	<!-- item example 1 -->
-	<div class="c-upload__item">
-		<div class="c-upload__filename">Filename.pdf <span class="c-upload__filesize">305 KB</span>
-		</div>
-		<div class="c-upload__action">
-			<button class="c-upload__button">Remove</button>
-		</div>
-	</div>
-	<!-- item example 2 -->
-	<div class="c-upload__item">
-		<div class="c-upload__filename">Here_we_have_a_very_very_long_filename.pdf <span class="c-upload__filesize">305 KB</span>
-		</div>
-		<div class="c-upload__action">
-			<button class="c-upload__button">Remove</button>
-		</div>
-	</div>
-	<div class="c-upload__total-size--warning">Total: 610 KB</div>
-	<button class="o-button__plain-text2">Upload</button>
+    <section class="c-uploadwidget--software">
+  <header>
+    <img src="images/logo_zenodo.svg" alt="Zenodo">
+    <h2>Software</h2>
+  </header>
+  <b>Example 1, example 2, example 3</b>
+  <div class="c-choose">
+  <input id="c-input__file" class="c-input__file" type="file" name="file" multiple>
+  <label class="c-input__file-label" for="c-input__file">Choose Files</label>
 </div>
 
-		<!-- End Upload Files Component -->
+  <button type="button" class="js-uploadmodal__button-show-modal">Enter URLs</button>
+</section>
+
+    <section class="c-uploadwidget--supplemental">
+  <header>
+    <img src="images/logo_zenodo.svg" alt="Zenodo">
+    <h2>Supplemental Information</h2>
+  </header>
+  <b>Example 1, example 2, example 3</b>
+  <div class="c-choose">
+  <input id="c-input__file" class="c-input__file" type="file" name="file" multiple>
+  <label class="c-input__file-label" for="c-input__file">Choose Files</label>
+</div>
+
+  <button type="button" class="js-uploadmodal__button-show-modal">Enter URLs</button>
+</section>
+
+  </div>
+
+  <h2 class="o-heading__level2">Files</h2>
+
+  
+<table class="c-uploadtable">
+  <tr>
+    <th scope="col">Filename</th>
+    <th scope="col">Status</th>
+    <th scope="col">URL</th>
+    <th scope="col">Type</th>
+    <th scope="col">Size</th>
+    <th scope="col">Actions</th>
+  </tr>
+  <tr>
+    <th scope="row">file-1</th>
+    <td class="c-uploadtable__status">
+      <progress max="100" value="70"></progress>
+
+    </td>
+    <td><a href="https://www.example.com/file=1">https://usercontent.example.com/files/file-1</a></td>
+    <td>Data</td>
+    <td>4.6 Kb</td>
+    <td><button>Remove</button></td>
+  </tr>
+  <tr>
+    <th scope="row">file-2</th>
+    <td class="c-uploadtable__status">Pending</td>
+    <td><a href="https://www.example.com/file=2">https://filelocker.example.com/files/file-2</a></td>
+    <td>Data</td>
+    <td>4 Kb</td>
+    <td><button>Remove</button></td>
+  </tr>
+  <tr>
+    <th scope="row">file-3</th>
+    <td class="c-uploadtable__status">New</td>
+    <td><a href="https://www.example.com/file=3">https://box.example.com/files/file-3</a></td>
+    <td>Data</td>
+    <td>9 Kb</td>
+    <td><button>Remove</button></td>
+  </tr>
+  <tr>
+    <th scope="row">file-4</th>
+    <td class="c-uploadtable__status">New</td>
+    <td><a href="https://www.example.com/file=4">https://dochoarder.example.com/files/file-4</a></td>
+    <td>Data</td>
+    <td>10.1 Mb</td>
+    <td><button>Remove</button></td>
+  </tr>
+</table>
+
 
 		<!-- Begin Dataset Navigation Object -->
 		<div class="o-dataset-nav">
 			<button class="o-button__icon-left">Back to My Datasets</button>
-			<button class="o-button__icon-right">Proceed to Review</button>
+			<button class="o-button__icon-right">Proceed to Upload Software</button>
 		</div>
 		<!-- End Dataset Navigation Object -->
 
