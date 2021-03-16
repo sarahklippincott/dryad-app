@@ -14,7 +14,7 @@
 //= require jquery.turbolinks
 //= require jquery_ujs
 //= require jquery-ui
-//= require jquery-fileupload/basic
-//= require jquery-fileupload/vendor/tmpl
+//# require jquery-fileupload/basic  -- the old file upload
+//# require jquery-fileupload/vendor/tmpl -- the old file upload
 //= require ckeditor/init
 //= require_tree .
