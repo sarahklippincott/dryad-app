@@ -43,7 +43,7 @@ Gem::Specification.new do |s| # rubocop:disable Metrics/BlockLength
   s.add_dependency 'jquery-rails', '~> 4.1'
   s.add_dependency 'rails', '~> 5.2'
   s.add_dependency 'rsolr', '~> 2.3'
-  s.add_dependency 'sass-rails', '~> 5.0'
+  s.add_dependency 'sass-rails', '~> 6.0'
   s.add_dependency 'solr_wrapper', '~> 2.2'
   s.add_dependency 'turbolinks', '~> 5.2'
 
