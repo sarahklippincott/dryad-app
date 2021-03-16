@@ -1,2 +1,2 @@
-//= link ../stylesheets/stash_datacite/application.css
-//= link ../javascripts/stash_datacite/application.js
+//= link 'stash_datacite/application.css'
+//= link 'stash_datacite/application.js'
