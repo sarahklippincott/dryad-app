@@ -1,2 +1,5 @@
 //= link 'application.css'
 //= link 'application.js'
+//= link 'stash_datacite/manifest.js'
+//= link 'stash_discovery/manifest.js'
+//= link 'stash_engine/manifest.js'
