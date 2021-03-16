@@ -41,7 +41,8 @@ gem 'rubocop', '~> 0.90.0'
 gem 'coffee-rails', '~> 4.1'
 gem 'jquery-rails'
 gem 'sass-rails', '~> 5.0'
-gem 'therubyracer', platforms: :ruby
+# gem 'therubyracer', platforms: :ruby
+gem 'mini_racer'
 gem 'turbolinks'
 
 gem 'uglifier', '~> 3.0.4'
