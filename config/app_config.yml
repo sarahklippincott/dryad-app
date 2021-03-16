@@ -154,8 +154,8 @@ defaults: &DEFAULTS
       api_key: <%= Rails.application.credentials[Rails.env.to_sym][:pubmed_api_key] %>
   s3:
     region: us-west-2
-    bucket: <%= Rails.application.credentials[Rails.env.to_sym][:s3_bucket] %>
-    key: <%= Rails.application.credentials[Rails.env.to_sym][:s3_key] %>
+    bucket: dryad-s3-dev
+    key: AKIA2KERHV5EVVGMUL2M
     secret: <%= Rails.application.credentials[Rails.env.to_sym][:s3_secret] %>
 
 development: &DEVELOPMENT
