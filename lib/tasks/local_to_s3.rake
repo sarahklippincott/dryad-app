@@ -26,6 +26,7 @@ namespace :local_to_s3 do
 
       resource = StashEngine::Resource.where(id: res_id).first
       next unless resource
+
       if resource.submitted?
         puts " -- #{res_dir} --> not copied; it has already been submitted to Merritt"
         next

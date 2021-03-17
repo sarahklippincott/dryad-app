@@ -34,36 +34,36 @@ module Stash
         @s3_resource = Aws::S3::Resource.new(client: @s3_client)
       end
 
-      def upload(directory: 'test01', file_path:, content_type:)
+      def upload(file_path:, content_type:, directory: 'test01')
         file_name = File.basename(file_path)
 
         # s3 action
         obj = @s3_resource.bucket(@bucket_name).object("#{directory}/#{file_name}")
         # obj.upload_file(file_path, metadata: { content_type: content_type} )
-        obj.upload_file(file_path, content_type: content_type )
+        obj.upload_file(file_path, content_type: content_type)
       end
 
-      def download(directory: 'test01', filename:, save_path:)
+      def download(filename:, save_path:, directory: 'test01')
         obj = @s3_resource.bucket(@bucket_name).object("#{directory}/#{filename}")
         obj.get(response_target: File.join(save_path, filename))
       end
 
-      def destroy(directory: 'test01', filename:)
+      def destroy(filename:, directory: 'test01')
         obj = @s3_resource.bucket(@bucket_name).object("#{directory}/#{filename}")
         obj.delete
       end
 
-      def exists?(directory: 'test01', filename:)
+      def exists?(filename:, directory: 'test01')
         obj = @s3_resource.bucket(@bucket_name).object("#{directory}/#{filename}")
         obj.exists?
       end
 
-      def presigned_download_url(directory: 'test01', filename:, expires_in: 3600)
+      def presigned_download_url(filename:, directory: 'test01', expires_in: 3600)
         obj = @s3_resource.bucket(@bucket_name).object("#{directory}/#{filename}")
         obj.presigned_url(:get, expires_in: expires_in)
       end
 
-      def info(directory: 'test01', filename:)
+      def info(filename:, directory: 'test01')
         obj = @s3_resource.bucket(@bucket_name).object("#{directory}/#{filename}")
         # for normal objects in amazon, the etag is the md5
         # For items uploaded as multipart, then this isn't the case and they've baked their own thing.
@@ -76,7 +76,7 @@ module Stash
       end
 
       # this works for normal sizes < 5GB that don't need to be split into multipart
-      def presigned_upload_url(directory: 'test01', filename:, content_type:, expires_in: 3600)
+      def presigned_upload_url(filename:, content_type:, directory: 'test01', expires_in: 3600)
         obj = @s3_resource.bucket(@bucket_name).object("#{directory}/#{filename}")
         url = obj.presigned_url(:put, expires_in: expires_in, content_type: content_type)
         puts <<~EOS
@@ -85,7 +85,7 @@ module Stash
         EOS
       end
 
-      def multipart_upload(directory: 'test01', file_path:, content_type:, expires_in: 3600)
+      def multipart_upload(file_path:, content_type:, directory: 'test01', expires_in: 3600)
         file_name = File.basename(file_path)
 
         # create multipart upload
@@ -105,14 +105,12 @@ module Stash
           end
         end
 
-
         # now must complete or abort multipart upload
         mpu.complete(compute_parts: true)
       end
 
-      def info_explore(directory: 'test01', filename:, save_path:)
+      def info_explore(filename:, save_path:, directory: 'test01')
         obj = @s3_resource.bucket(@bucket_name).object("#{directory}/#{filename}")
-
 
         byebug
         # obj.content_length
