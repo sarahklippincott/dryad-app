@@ -9,7 +9,7 @@ gem 'mysql2', '~> 0.5.3'
 gem 'rails', '~> 5.2'
 gem 'rb-readline', '~> 0.5.5', require: false
 gem 'sprockets', '~> 4.0'
-gem 'babel-transpiler'
+# gem 'babel-transpiler'
 
 # ############################################################
 # Local engines
