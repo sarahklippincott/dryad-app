@@ -5583,6 +5583,12 @@ html.no-details .o-showhide__summary {
 
 .c-uploadmodal {
   border: none; }
+  .c-uploadmodal::-webkit-backdrop {
+    background-color: rgba(0, 0, 0, 0.5); }
+  .c-uploadmodal::backdrop {
+    background-color: rgba(0, 0, 0, 0.5); }
+  .c-uploadmodal + .backdrop {
+    background-color: rgba(0, 0, 0, 0.5); }
 
 .c-uploadmodal__header {
   display: -webkit-box;
