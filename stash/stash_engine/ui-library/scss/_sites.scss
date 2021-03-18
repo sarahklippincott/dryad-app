@@ -123,6 +123,38 @@
   }
 }
 
+.o-sites__group-subgroup-head {
+  @extend %o-sites__item;
+
+  @include bp(screen3) {
+    border-right: 1px solid $design-light-gray-color;
+    border-left: 1px solid $design-light-gray-color;
+
+    &:hover,
+    &:focus {
+      color: $link-globalnav-hover-color;
+      text-decoration: underline;
+    }
+
+  }
+}
+
+.o-sites__group-subgroup-item {
+  @extend %o-sites__item;
+
+  @include bp(screen3) {
+    border-right: 1px solid $design-light-gray-color;
+    border-left: 1px solid $design-light-gray-color;
+
+    &:hover,
+    &:focus {
+      color: $link-globalnav-hover-color;
+      text-decoration: underline;
+    }
+
+  }
+}
+
 .o-sites__login {
   @extend %o-sites__item;
   background-color: $design-dark-blue-color;

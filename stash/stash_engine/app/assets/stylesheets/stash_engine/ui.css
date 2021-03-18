@@ -3639,6 +3639,26 @@ html.no-details .o-showhide__summary {
       .o-sites__summary:hover, .o-sites__group-heading:hover, .o-sites__group-item:hover, .o-sites__login:hover, .o-sites__summary:focus, .o-sites__group-heading:focus, .o-sites__group-item:focus, .o-sites__login:focus {
         color: #cf4817; } }
 
+
+############
+  
+.o-sites__summary, .o-sites__group-heading, .o-sites__group-item, .o-sites__login {
+  display: block;
+  margin: 0 0 2px;
+  padding: 10px;
+  background-color: #4891af;
+  color: white;
+  text-decoration: none; }
+  @media (min-width: 870px) {
+    .o-sites__summary, .o-sites__group-heading, .o-sites__group-item, .o-sites__login {
+      margin: 0;
+      background-color: white;
+      color: black; }
+      .o-sites__summary:hover, .o-sites__group-heading:hover, .o-sites__group-item:hover, .o-sites__login:hover, .o-sites__summary:focus, .o-sites__group-heading:focus, .o-sites__group-item:focus, .o-sites__login:focus {
+        color: #cf4817; } }
+###########
+  
+  
 .o-sites__summary {
   position: relative;
   padding: 0 20px 0 0; }
