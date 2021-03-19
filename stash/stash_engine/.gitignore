@@ -22,6 +22,8 @@ node_modules
 # except javascript we need in regular app by npm
 !node_modules/evaporate/**
 ui-library/css/main.css
+ui-library/css/vendor/
+ui-library/js/vendor/
 ui-library/bower_components
 ui-library/css/vendor/
 ui-library/js/vendor/
