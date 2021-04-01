@@ -48,7 +48,7 @@ function uploadListToS3() {
 
     // redraw the uploaded files table from Rails AJAX
     $.ajax({
-      url: "<%= polymorphic_path(file, resource_id: resource.id, format: :js) %>",
+      url: "<%= polymorphic_translator(file, resource_id: resource.id, format: :js) %>",
       dataType: 'script'
     });
   }).catch(function() {

@@ -37,5 +37,31 @@ module StashEngine
       obj.class.to_s.split('::').last.downcase
     end
 
+    def file_type_path(file_obj)
+      # polymorphic_path(file, resource_id: @resource.id, format: :js)
+      # file_uploads_path(resource_id: @resource.id, format: :js)
+    end
+
+    # this translates our new models into the controllers for the old ones that used polymorphic path
+    # ("file_upload" and "software_upload") since we're redoing all of this now, leaving the controllers in place
+    # and translating from new models to old urls for old controllers.
+    def polymorphic_translator(file_type, args={})
+      action_type = 'index'
+      if file_type.class == Array
+        action_type, file_type = file_type
+      end
+
+      # file_uploads_path, new_file_upload_path, edit_file_upload_path, file_upload_path
+      # software_uploads_path, new_software_upload_path, edit_software_upload_path, software_upload_path
+
+      file_type = file_type.class unless file_type.is_a?(Class) # if instance get the class instead
+      the_controller =  if file_type == StashEngine::DataFile
+                          'file_uploads'
+                        else
+                          'software_uploads'
+                        end
+      url_for({controller: the_controller, action: action_type, only_path: true}.merge(args))
+    end
+
   end
 end

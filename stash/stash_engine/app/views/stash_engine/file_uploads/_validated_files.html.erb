@@ -25,11 +25,11 @@
     <% if resource.send(@resource_assoc).validated_table.count > 10 %>
       <% if rows == 10 %>
         <p id="show_all_files">
-          <%= link_to 'Show all files', polymorphic_path(@file_model, resource_id: resource.id, rows: 99999), format: 'js', remote: true %>
+          <%= link_to 'Show all files', polymorphic_translator(@file_model, resource_id: resource.id, rows: 99999), format: 'js', remote: true %>
         </p>
       <% else %>
         <p id="show_10_files">
-          <%= link_to 'Show 10 files', polymorphic_path(@file_model,resource_id: resource.id, rows: 10), format: 'js', remote: true %>
+          <%= link_to 'Show 10 files', polymorphic_translator(@file_model,resource_id: resource.id, rows: 10), format: 'js', remote: true %>
         </p>
       <% end %>
     <% end %>
