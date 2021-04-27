@@ -17,9 +17,9 @@ module StashDatacite
         create(:resource_type, resource: @resource)
         create(:author, resource: @resource)
         create(:author, resource: @resource)
-        create(:file_upload, resource: @resource)
-        create(:file_upload, resource: @resource)
-        create(:file_upload, resource: @resource)
+        create(:data_file, resource: @resource)
+        create(:data_file, resource: @resource)
+        create(:data_file, resource: @resource)
         @resource.reload
         @completions = Completions.new(@resource)
       end
@@ -151,14 +151,14 @@ module StashDatacite
       describe :urls_validated do
         describe ':manifest uploads' do
           before(:each) do
-            @resource.file_uploads.find_each do |upload|
+            @resource.data_files.find_each do |upload|
               upload.url = "http://example.org/#{upload.upload_file_name}"
               upload.save!
             end
           end
 
           it 'returns true when no files are newly created' do
-            new_files = resource.file_uploads.newly_created
+            new_files = resource.data_files.newly_created
             new_files.find_each do |upload|
               upload.file_state = :copied
               upload.save!
@@ -168,7 +168,7 @@ module StashDatacite
           end
 
           it 'returns true when all newly created files are valid' do
-            resource.file_uploads.newly_created.find_each do |upload|
+            resource.data_files.newly_created.find_each do |upload|
               upload.status_code = 200
               upload.save!
             end
@@ -176,21 +176,21 @@ module StashDatacite
           end
 
           it 'returns false when at least one newly created file has an error' do
-            upload = resource.file_uploads.take
+            upload = resource.data_files.take
             upload.status_code = 403
             upload.save!
             expect(completions.urls_validated?).to eq(false)
           end
 
-          it 'returns false when at least one Zenodo files has an error' do
+          it 'returns false when at least one Zenodo file has an error' do
             # good uploads for dataset
-            resource.file_uploads.newly_created.find_each do |upload|
+            resource.data_files.newly_created.find_each do |upload|
               upload.status_code = 200
               upload.save!
             end
 
             # bad upload for zenodo
-            resource.software_uploads << create(:software_upload, status_code: 411, url: 'https://happy.clown.example.com')
+            resource.software_files << create(:software_file, status_code: 411, url: 'https://happy.clown.example.com')
 
             @completions = Completions.new(resource) # refresh the completions object since I changed it
             expect(completions.urls_validated?).to eq(false)
@@ -204,12 +204,38 @@ module StashDatacite
         end
       end
 
+      describe :s3_error_uploads do
+
+        it 'verifies uploads to s3 are present' do
+          @resource.generic_files.map(&:calc_s3_path).each do |s3_path|
+            allow(Stash::Aws::S3).to receive('exists?').with(s3_key: s3_path).and_return(true)
+          end
+          expect(completions.s3_error_uploads).to eq([])
+        end
+
+        it 'returns missing files when files uploaded to s3 are not present' do
+          @resource.generic_files.map(&:calc_s3_path).each do |s3_path|
+            allow(Stash::Aws::S3).to receive('exists?').with(s3_key: s3_path).and_return(false)
+          end
+          expect(completions.s3_error_uploads).to eq(@resource.generic_files.map(&:upload_file_name))
+        end
+
+        it 'only checks files that are new uploads and are not urls' do
+          @resource.generic_files.first.update(file_state: 'copied')
+          @resource.generic_files.second.update(url: 'http://example.com')
+          @resource.generic_files.map(&:calc_s3_path).each do |s3_path|
+            allow(Stash::Aws::S3).to receive('exists?').with(s3_key: s3_path).and_return(false)
+          end
+          expect(completions.s3_error_uploads).to eq([@resource.generic_files.last.upload_file_name])
+        end
+      end
+
       describe :over_manifest_file_size? do
         attr_reader :actual_size
 
         before(:each) do
           @actual_size = resource
-            .file_uploads
+            .data_files
             .present_files
             .inject(0) { |sum, f| sum + f.upload_file_size }
         end
@@ -225,7 +251,7 @@ module StashDatacite
         end
 
         it 'counts copied files as well as new uploads' do
-          resource.file_uploads.present_files.to_a.each_with_index do |f, index|
+          resource.data_files.present_files.to_a.each_with_index do |f, index|
             if index.even?
               f.file_state = :copied
               f.save!
@@ -240,7 +266,7 @@ module StashDatacite
         attr_reader :actual_size
 
         before(:each) do
-          @actual_size = @resource.file_uploads.present_files.inject(0) { |sum, f| sum + f.upload_file_size }
+          @actual_size = @resource.data_files.present_files.inject(0) { |sum, f| sum + f.upload_file_size }
         end
 
         it 'returns true if file size > limit' do
@@ -257,7 +283,7 @@ module StashDatacite
       describe :over_manifest_file_count? do
         attr_reader :actual_count
         before(:each) do
-          @actual_count = resource.file_uploads.present_files.count
+          @actual_count = resource.data_files.present_files.count
         end
         it 'returns true if file count > limit' do
           limit = actual_count - 1
@@ -270,7 +296,7 @@ module StashDatacite
         end
 
         it 'counts copied files as well as new uploads' do
-          resource.file_uploads.present_files.to_a.each_with_index do |f, index|
+          resource.data_files.present_files.to_a.each_with_index do |f, index|
             if index.even?
               f.file_state = :copied
               f.save!
@@ -507,6 +533,7 @@ module StashDatacite
 
         before(:each) do
           expect(completions.required_completed).to eq(REQUIRED_COUNT) # just to be sure
+          @resource.generic_files.each { |f| f.update(url: 'http://example.com') }
         end
 
         it 'warns on missing title' do
@@ -545,7 +572,7 @@ module StashDatacite
         end
 
         it 'warns on unvalidated URLs' do
-          @resource.file_uploads.newly_created.find_each do |upload|
+          @resource.data_files.newly_created.find_each do |upload|
             upload_file_name = upload.upload_file_name
             filename_encoded = ERB::Util.url_encode(upload_file_name)
             upload.url = "http://example.org/uploads/#{filename_encoded}"

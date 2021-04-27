@@ -41,14 +41,14 @@ namespace :dev_ops do
       puts 'RAILS_ENV must be explicitly set before running this script'
       next
     end
-    fus = StashEngine::FileUpload.where(upload_file_size: [0, nil])
-    fus.each do |file_upload|
-      resource = file_upload.resource
+    fus = StashEngine::DataFile.where(upload_file_size: [0, nil])
+    fus.each do |data_file|
+      resource = data_file.resource
       next unless resource && resource.current_resource_state && resource.current_resource_state.resource_state == 'submitted'
 
       puts "updating resource #{resource.id} & #{resource.identifier}"
       ds_info = Stash::Repo::DatasetInfo.new(resource.identifier)
-      file_upload.update(upload_file_size: ds_info.file_size(file_upload.upload_file_name))
+      data_file.update(upload_file_size: ds_info.file_size(data_file.upload_file_name))
     end
   end
 
@@ -141,6 +141,7 @@ namespace :dev_ops do
     puts 'Re-enqueuing Zenodo replication jobs that were deferred'
     StashEngine::ZenodoCopyJob.enqueue_deferred
     StashEngine::ZenodoSoftwareJob.enqueue_deferred
+    StashEngine::ZenodoSuppJob.enqueue_deferred
   end
 
   desc 'Gets Counter token for submitting a report'

@@ -19,6 +19,7 @@ module StashDatacite
 
       # below will create @identifier, @resource, @user and the basic required things for an initial version of a dataset
       create_basic_dataset! # makes @user, @identifier, @resource with file uploads
+      @resource.generic_files.each { |f| f.update(url: 'http://example.com') } # bypasses S3 file validation by using URL instead
 
       # HACK: in session because requests specs don't allow session in rails unless you want to request the full login nightmare first
       # https://github.com/rails/rails/issues/23386#issuecomment-178013357
@@ -32,18 +33,22 @@ module StashDatacite
       end
 
       it 'shows files for Merritt' do
-        @upload = create(:file_upload,
+        @upload = create(:data_file,
                          resource: @resource,
-                         file_state: 'created')
+                         file_state: 'created',
+                         url: 'http://example.com',
+                         status_code: 200)
 
         get StashDatacite::Engine.routes.url_helpers.resources_review_path(id: @resource.id, format: 'js'), xhr: true
         expect(response.body).to include(@upload.upload_file_name)
       end
 
       it 'outputs files for Zenodo' do
-        @upload = create(:software_upload,
+        @upload = create(:software_file,
                          resource: @resource,
-                         file_state: 'created')
+                         file_state: 'created',
+                         url: 'http://example.com',
+                         status_code: 200)
 
         get StashDatacite::Engine.routes.url_helpers.resources_review_path(id: @resource.id, format: 'js'), xhr: true
         expect(response.body).to include(@upload.upload_file_name)

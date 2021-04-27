@@ -1,4 +1,5 @@
 require 'httparty'
+require 'stash/google/journal_gmail'
 require_relative 'identifier_rake_functions'
 
 # rubocop:disable Metrics/BlockLength
@@ -347,6 +348,23 @@ namespace :curation_stats do
       stats.recalculate unless stats.created_at > 2.seconds.ago
     end
   end
-
 end
+
+namespace :journal_email do
+  desc 'Acquire a token for working with the target GMail account'
+  task validate_gmail_connection: :environment do
+    Stash::Google::JournalGMail.validate_gmail_connection
+  end
+
+  desc 'Process all messages in the GMail account that have the target label'
+  task process: :environment do
+    Stash::Google::JournalGMail.process
+  end
+
+  desc 'Clean outdated manuscript entries'
+  task clean_old_manuscripts: :environment do
+    StashEngine::Manuscript.where('created_at < ?', 2.years.ago).delete_all
+  end
+end
+
 # rubocop:enable Metrics/BlockLength

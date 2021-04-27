@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'stash/aws/s3'
+
 # basing this structure on that suggested in http://vrybas.github.io/blog/2014/08/15/a-way-to-organize-poros-in-rails/
 
 # also
@@ -80,23 +82,32 @@ module StashDatacite
       end
 
       def urls_validated?
-        if @resource.file_uploads.newly_created.errors.count > 0 || @resource.software_uploads.newly_created.errors.count > 0
+        if @resource.data_files.newly_created.errors.count > 0 || @resource.software_files.newly_created.errors.count > 0
           false
         else
           true
         end
       end
 
+      def s3_error_uploads
+        files = @resource.generic_files.newly_created.file_submission
+        errored_uploads = []
+        files.each do |f|
+          errored_uploads.push(f.upload_file_name) unless Stash::Aws::S3.exists?(s3_key: f.calc_s3_path)
+        end
+        errored_uploads
+      end
+
       def over_manifest_file_size?(size_limit)
-        @resource.file_uploads.present_files.sum(:upload_file_size) > size_limit
+        @resource.data_files.present_files.sum(:upload_file_size) > size_limit
       end
 
       def over_manifest_file_count?(count_limit)
-        @resource.file_uploads.present_files.count > count_limit
+        @resource.data_files.present_files.count > count_limit
       end
 
       def over_version_size?(size_limit)
-        @resource.upload_type == :files && @resource.file_uploads.newly_created.sum(:upload_file_size) > size_limit
+        @resource.upload_type == :files && @resource.data_files.newly_created.sum(:upload_file_size) > size_limit
       end
 
       def required_total
@@ -171,6 +182,7 @@ module StashDatacite
 
       def all_warnings
         messages = []
+        error_uploads = s3_error_uploads
         messages << 'Add a dataset title' unless title
         messages << 'Add an abstract' unless abstract
         messages << 'For data related to a journal article, you must supply a manuscript number or DOI' unless article_id
@@ -178,6 +190,12 @@ module StashDatacite
         messages << 'The first author must have an email supplied' unless author_email
         messages << 'Authors must have affiliations' unless author_affiliation
         messages << 'Fix or remove upload URLs that were unable to validate' unless urls_validated?
+        if error_uploads.present?
+          messages << 'Some files can not be submitted because they may have had errors uploading. ' \
+            'Please re-upload the following files if you still see this error in a few minutes.'
+          messages << "Files with upload errors: #{error_uploads.join(',')}"
+        end
+
         # do not require strict related works identifier checking right now
         # messages << 'At least one of your Related Works DOIs are not formatted correctly' unless good_related_works_formatting?
         # messages << 'At least one of your Related Works DOIs did not validate from https://doi.org' unless good_related_works_validation?
