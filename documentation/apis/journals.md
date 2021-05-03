@@ -62,7 +62,9 @@ Overview of the email workflow
 ------------------------------
 
 1. Journal sends email with article metadata to the
-   `journal-submit@datadryad.org` email address, which forwards to `journal-submit-app@datadryad.org`
+   `journal-submit@datadryad.org` email address, which forwards to
+   `journal-submit-app@datadryad.org` (used by the Dryad application) and
+   `dryad.journal.submit@gmail.com` (used by the curators).
 2. Messages in `journal-submit-app@datadryad.org` are automatically labeled
    by GMail with a special label.
 3. At a regular interval, Dryad retrieves emails with the label, and processes
