@@ -24,10 +24,6 @@ default: &default
     strategy: none
   default_license: cc0
   dash_logo_after_tenant: false
-  ## maximum total size (default 100 GB for now)
-  max_submission_size: 3.0e+11
-  max_total_version_size: 1.0e+10
-  max_files: 1000
   campus_contacts: ["scott.fisher@ucop.edu"]
   data_deposit_agreement: false
   partner_display: false
@@ -49,7 +45,7 @@ production:
   manager_email: ["Daniella.Lowenberg@ucop.edu"]
   repository:
     domain: https://merritt.cdlib.org
-    endpoint: "http://mrtsword.cdlib.org:39001/mrtsword/collection/cdl_dryad"
+    endpoint: "http://mrtsword.cdlib.org:39001/mrtsword/collection/dataone_dash"
     username: <%= Rails.application.credentials[Rails.env.to_sym][:merritt_dryad_username] %>
     password: <%= Rails.application.credentials[Rails.env.to_sym][:merritt_dryad_password] %>
   identifier_service:

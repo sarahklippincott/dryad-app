@@ -29,12 +29,12 @@ jobs:
         echo "BUNDLER_VERSION=`cat ./Gemfile.lock | grep -A 1 'BUNDLED WITH' | grep -oE '[0-9]\.[0-9]'`" >> $GITHUB_ENV
 
     - name: 'Install Ruby'
-      uses: actions/setup-ruby@v1
+      uses: ruby/setup-ruby@v1.68.0
       with:
         ruby-version: ${{ env.RUBY_VERSION }}
 
     - name: 'Retrieve Cached Gems'
-      uses: actions/cache@v1
+      uses: actions/cache@v2.1.5
       with:
         path: vendor/bundle
         key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
@@ -61,6 +61,9 @@ jobs:
 
     - name: 'Compile Assets'
       run: bin/rails assets:precompile
+
+    - name: 'Compile webpacker assets'
+      run: RAILS_ENV=test bundle exec rails webpacker:compile
 
     - name: 'Run RSpec Feature Tests'
       run: bin/bundle exec rspec --force-color --format RSpec::Github::Formatter --format progress --tag ~skip spec/features/

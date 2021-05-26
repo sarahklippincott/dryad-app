@@ -21,7 +21,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'stash/merritt/module_info'
 require 'uri'
 
-Gem::Specification.new do |s| # rubocop:disable Metrics/BlockLength
+Gem::Specification.new do |s|
   s.name          = Stash::Merritt::NAME
   s.version       = Stash::Merritt::VERSION
   s.authors       = ['David Moles']
@@ -52,7 +52,6 @@ Gem::Specification.new do |s| # rubocop:disable Metrics/BlockLength
   s.add_dependency 'stash-sword', '~> 0.0'
   s.add_dependency 'stash-wrapper', '~> 0.0'
 
-  s.add_development_dependency 'bundler', '~> 2.1.4'
   s.add_development_dependency 'nokogiri', '~> 1.8'
   s.add_development_dependency 'rake', '~> 12.0'
   s.add_development_dependency 'rspec', '~> 3.3'

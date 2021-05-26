@@ -67,11 +67,16 @@ module StashEngine
     # ------------------------------------------
 
     # When the status is published/embargoed send to Stripe and DataCite
-    after_create :submit_to_datacite, :update_solr, :process_payment, :remove_peer_review,
-                 if: proc { |ca|
-                       !ca.resource.skip_datacite_update && (ca.published? || ca.embargoed?) &&
-                                 latest_curation_status_changed?
-                     }
+    after_create do
+      if !resource.skip_datacite_update &&
+          (published? || embargoed?) &&
+          latest_curation_status_changed?
+        submit_to_datacite
+        update_solr
+        process_payment
+        remove_peer_review
+      end
+    end
 
     after_create :copy_to_zenodo, if: proc { |ca|
       !ca.resource.skip_datacite_update && ca.published? && latest_curation_status_changed?
@@ -192,7 +197,6 @@ module StashEngine
     end
 
     # Triggered on a status change
-    # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     def email_status_change_notices
       return if previously_published?
 
@@ -279,7 +283,7 @@ module StashEngine
       resource.update_column(:file_view, false) unless changed # if nothing changed between previous published and this, don't view same files again
       resource.update_column(:file_view, false) unless resource.current_file_uploads.present?
     end
-    # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
+    # rubocop:enable
 
     # Helper methods
     # ------------------------------------------

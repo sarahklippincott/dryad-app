@@ -22,7 +22,7 @@ module Stash
         false
       end
 
-      # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+      # rubocop:disable Metrics/AbcSize
       def self.standard_request(method, url, **args)
         retries = 0
 
@@ -48,6 +48,8 @@ module Stash
           # zenodo's servers seem to give 504s sometimes
           raise RetryError, "Zenodo response: #{r.status.code}\n#{resp} for \nhttp.#{method} #{url}\n#{resp}" if r.status.code >= 500
 
+          return resp if method.to_sym == :delete && r.status.code == 404 # ignore deleting if it already doesn't exist
+
           # for things like 400 errors that aren't likely to change with a Retry
           raise ZenodoError, "Zenodo response: #{r.status.code}\n#{resp} for \nhttp.#{method} #{url}\n#{resp}" unless r.status.success?
 
@@ -65,7 +67,7 @@ module Stash
           # rubocop:enable Style/GuardClause
         end
       end
-      # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
+      # rubocop:enable Metrics/AbcSize
 
       # NOTE: Alex suggested we use a URL like https://sandbox.zenodo.org/api/deposit/depositions?q=doi:%2210.7959/dryad.bzkh1894f%22
       # to do lookups by DOIs to see they exist before proceeding with a retry on a POST request.

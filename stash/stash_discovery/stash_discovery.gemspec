@@ -21,7 +21,7 @@ require 'stash_discovery/version'
 # for our uses.
 
 # Describe your gem and declare its dependencies:
-Gem::Specification.new do |s| # rubocop:disable Metrics/BlockLength
+Gem::Specification.new do |s|
   s.name        = 'stash_discovery'
   s.version     = StashDiscovery::VERSION
   s.authors     = ['David Moles']
@@ -51,7 +51,6 @@ Gem::Specification.new do |s| # rubocop:disable Metrics/BlockLength
   s.add_dependency 'devise-guests', '~> 0.5'
 
   s.add_development_dependency 'nokogiri', '~> 1.8'
-  s.add_development_dependency 'rspec', '~> 3.5'
   s.add_development_dependency 'rubocop', '~> 0.57.2'
   s.add_development_dependency 'simplecov', '~> 0.14'
   s.add_development_dependency 'simplecov-console', '~> 0.4'

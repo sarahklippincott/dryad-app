@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable Metrics/BlockLength
 namespace :status_dashboard do
 
   desc 'Check Solr'
@@ -53,6 +52,14 @@ namespace :status_dashboard do
       name: 'Database Backups',
       description: 'The service manages short-term backups of the database',
       documentation: 'This is managed by the 30-minute cron job on the server.',
+      internally_managed: true,
+      status: 1
+    },
+    {
+      abbreviation: 'submission_queue',
+      name: 'Submission Queue',
+      description: 'The submisison queue manages processing of submissions to Merritt',
+      documentation: '',
       internally_managed: true,
       status: 1
     },
@@ -132,4 +139,3 @@ namespace :status_dashboard do
   ].freeze
   # rubocop:enable Layout/LineLength
 end
-# rubocop:enable Metrics/BlockLength

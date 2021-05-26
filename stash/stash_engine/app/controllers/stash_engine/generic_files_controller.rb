@@ -1,12 +1,10 @@
 require 'stash/aws/s3'
-
-# rubocop:disable Metrics/ClassLength
 module StashEngine
   class GenericFilesController < ApplicationController
 
     before_action :setup_class_info, :require_login
-    before_action :set_file_info, only: %i[destroy destroy_error destroy_manifest]
-    before_action :ajax_require_modifiable, only: %i[destroy_error destroy_manifest create validate_urls presign_upload upload_complete]
+    before_action :set_file_info, only: %i[destroy_manifest]
+    before_action :ajax_require_modifiable, only: %i[destroy_manifest validate_urls presign_upload upload_complete]
 
     helper_method :resource
 
@@ -16,33 +14,12 @@ module StashEngine
       @resource_assoc = :generic_files
     end
 
-    # show the list of files for resource
-    def index
-      respond_to do |format|
-        format.js do
-          resource
-          render 'stash_engine/data_files/index.js.erb'
-        end
-      end
-    end
-
-    # this seems to destroy a file that had an error?
-    def destroy_error
-      respond_to do |format|
-        format.js do
-          @url = @file.url
-          @file.destroy
-          render 'stash_engine/data_files/destroy_error.js.erb'
-        end
-      end
-    end
-
     # This used to be only for manifests, but now destroys both manifest and upload files
     def destroy_manifest
       respond_to do |format|
-        format.js do
+        format.html do
           @file.smart_destroy!
-          render 'stash_engine/data_files/destroy_manifest.js.erb'
+          render plain: 'OK'
         end
       end
     end
@@ -55,9 +32,17 @@ module StashEngine
         url_param = params[:url]
         return if url_param.blank?
 
-        urls_from(url_param).each { |url| create_upload(url) }
-        format.js do
-          render 'stash_engine/data_files/validate_urls.js.erb'
+        url_errors = []
+        urls_from(url_param).each do |url|
+          result = create_upload(url)
+          url_errors.push(result) if result[:status_code] != 200
+        end
+        format.html do
+          render json: {
+            # map(&:attributes): one way for translating ActiveRecord field type to json
+            valid_urls: @resource.generic_files.validated_table.map(&:attributes),
+            invalid_urls: url_errors
+          }
         end
       end
     end
@@ -72,11 +57,11 @@ module StashEngine
 
     def upload_complete
       respond_to do |format|
-        format.json do
+        format.any(:json, :html) do
           # destroy any previous with this name and overwrite with this one
           @resource.send(@resource_assoc).where(upload_file_name: params[:name]).destroy_all
 
-          _db_file =
+          db_file =
             @file_model.create(
               upload_file_name: params[:name],
               upload_content_type: params[:type],
@@ -87,13 +72,7 @@ module StashEngine
               original_filename: params[:original]
             )
 
-          render json: { msg: 'ok' }
-          # I tried code like this, but it always runs into some race condition and fails for large files
-          # since I think Amazon hasn't assembled files from parts right away upon them completing in Evaporate.
-          # unless Stash::Aws::S3.exists?(s3_key: db_file.calc_s3_path)
-          #  db_file.destroy!
-          #  render json: { msg: "bad upload at S3 for #{params[:name]}"}, status: :bad_request
-          # end
+          render json: { new_file: db_file }
         end
       end
     end
@@ -113,12 +92,14 @@ module StashEngine
     def create_upload(url)
       url_translator = Stash::UrlTranslator.new(url)
       validator = StashEngine::UrlValidator.new(url: url_translator.direct_download || url)
-      @file_model.create(validator.upload_attributes_from(translator: url_translator, resource: resource, association: @resource_assoc))
-    end
-
-    def unique_upload_path(original_filename)
-      filename = UrlValidator.make_unique(resource: resource, filename: original_filename, association: @resource_assoc)
-      File.join(@upload_dir, filename)
+      attributes = validator.upload_attributes_from(
+        translator: url_translator, resource: resource, association: @resource_assoc
+      )
+      if attributes[:status_code] != 200
+        { url: attributes[:url], status_code: attributes[:status_code] }
+      else
+        @file_model.create(attributes)
+      end
     end
 
     def urls_from(url_param)
@@ -127,16 +108,6 @@ module StashEngine
 
     def set_file_info
       @file = @file_model.find(params[:id])
-    end
-
-    # Remove any unwanted characters from the uploaded file's name
-    def sanitize_filename
-      uploaded_file = params[:upload][:upload]
-      return unless uploaded_file.is_a?(ActionDispatch::Http::UploadedFile)
-
-      sanitized = @file_model.sanitize_file_name(uploaded_file.original_filename)
-      @original_filename = uploaded_file.original_filename
-      uploaded_file.original_filename = sanitized
     end
 
     def hmac_data
@@ -160,4 +131,3 @@ module StashEngine
     end
   end
 end
-# rubocop:enable Metrics/ClassLength

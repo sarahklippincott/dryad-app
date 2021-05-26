@@ -5,8 +5,6 @@ require 'http'
 module StashDatacite
 
   class ExternalServerError < RuntimeError; end
-
-  # rubocop:disable Metrics/ClassLength
   class RelatedIdentifier < ApplicationRecord
     self.table_name = 'dcs_related_identifiers'
     belongs_to :resource, class_name: StashEngine::Resource.to_s
@@ -37,6 +35,8 @@ module StashDatacite
                              'is source of': 'issourceof' }.freeze
 
     enum work_type: %i[undefined article dataset preprint software supplemental_information]
+
+    enum added_by: { default: 0, zenodo: 1 }
 
     WORK_TYPE_CHOICES = { article: 'Article', dataset: 'Dataset', preprint: 'Preprint', software: 'Software',
                           supplemental_information: 'Supplemental Information' }.with_indifferent_access
@@ -128,21 +128,35 @@ module StashDatacite
       "This dataset #{relation_name_english} #{related_identifier_type_friendly}: #{related_identifier}"
     end
 
-    def self.add_zenodo_relation(resource_id:, doi:)
-      doi = standardize_doi(doi)
-      existing_item = where(resource_id: resource_id).where(related_identifier_type: 'doi')
-        .where(related_identifier: doi).last
-      if existing_item.nil?
+    # rubocop:disable Naming/AccessorMethodName
+    def self.set_latest_zenodo_relations(resource:)
+      resource.related_identifiers.where(added_by: 'zenodo').destroy_all
+
+      sfw_copy = StashEngine::ZenodoCopy.last_copy_with_software(identifier_id: resource.identifier.id)
+      if sfw_copy.present?
+        doi = standardize_doi(sfw_copy.software_doi)
         create(related_identifier: doi,
                related_identifier_type: 'doi',
                relation_type: 'isderivedfrom',
                work_type: 'software',
                verified: true,
-               resource_id: resource_id)
-      else
-        existing_item.update(related_identifier: doi, relation_type: 'isderivedfrom', work_type: 'software', verified: true)
+               resource_id: resource.id,
+               added_by: 'zenodo')
       end
+
+      supp_copy = StashEngine::ZenodoCopy.last_copy_with_supp(identifier_id: resource.identifier.id)
+      return unless supp_copy.present?
+
+      doi = standardize_doi(supp_copy.software_doi)
+      create(related_identifier: doi,
+             related_identifier_type: 'doi',
+             relation_type: 'issupplementto',
+             work_type: 'supplemental_information',
+             verified: true,
+             resource_id: resource.id,
+             added_by: 'zenodo')
     end
+    # rubocop:enable Naming/AccessorMethodName
 
     def self.remove_zenodo_relation(resource_id:, doi:)
       doi = standardize_doi(doi)
@@ -241,5 +255,5 @@ module StashDatacite
       self.related_identifier = related_identifier.strip unless related_identifier.nil?
     end
   end
-  # rubocop:enable Metrics/ClassLength
+
 end

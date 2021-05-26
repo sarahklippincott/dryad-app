@@ -1,4 +1,3 @@
-# rubocop:disable Metrics/ClassLength
 module StashApi
   # takes a dataset hash, parses it out and saves it to the appropriate places in the database
   class DatasetParser
@@ -25,6 +24,10 @@ module StashApi
     # this is the basic required metadata
     def parse
       clear_previous_metadata
+      @resource.curation_activities << StashEngine::CurationActivity.create(status: @resource.current_curation_status || 'in_progress',
+                                                                            user_id: @user.id,
+                                                                            resource_id: @resource.id,
+                                                                            note: 'Created by API user')
       owning_user_id = establish_owning_user_id
       @resource.update(
         title: @hash['title'],
@@ -45,6 +48,7 @@ module StashApi
       @resource.identifier.save
       @resource.identifier
     end
+    # rubocop:enable
 
     private
 
@@ -176,4 +180,3 @@ module StashApi
 
   end
 end
-# rubocop:enable Metrics/ClassLength

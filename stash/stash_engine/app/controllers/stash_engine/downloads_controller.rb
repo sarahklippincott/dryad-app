@@ -2,8 +2,6 @@ require_dependency 'stash_engine/application_controller'
 require 'stash/download/file_presigned'
 require 'stash/download/version_presigned'
 require 'http'
-
-# rubocop:disable Metrics/ClassLength
 module StashEngine
   class DownloadsController < ApplicationController
     include ActionView::Helpers::DateHelper
@@ -40,7 +38,6 @@ module StashEngine
     end
 
     # for downloading the full version
-    # rubocop:disable Metrics/MethodLength
     def download_resource
       @resource = nil
       @resource = Resource.where(id: params[:resource_id]).first if params[:share].nil?
@@ -68,7 +65,6 @@ module StashEngine
       end
     end
 
-    # rubocop:enable Metrics/MethodLength
     # checks assembly status for a resource and returns json from Merritt and http-ish status code, from progressbar polling
     def assembly_status
       @resource = nil
@@ -113,16 +109,16 @@ module StashEngine
     # Also may need to enable passing secret token for sharing access and right now we only supply Zenodo downloads for
     # private access, not to the general public which should go to Zenodo to examine the full info and downloads.
     def zenodo_file
-      sfw_upload = SoftwareFile.where(id: params[:file_id]).first
-      res = sfw_upload&.resource
+      zen_upload = GenericFile.where(id: params[:file_id]).first
+      res = zen_upload&.resource
       share = (params[:share].blank? ? nil : StashEngine::Share.where(secret_id: params[:share]).first)
 
       # can see if they had permission or the Share matches the identifier
       if res && (res&.may_download?(ui_user: current_user) || share&.identifier_id == res&.identifier&.id)
-        if res.software_published?
-          redirect_to sfw_upload.public_zenodo_download_url
+        if res.zenodo_published?
+          redirect_to zen_upload.public_zenodo_download_url
         else
-          redirect_to sfw_upload.zenodo_presigned_url
+          redirect_to zen_upload.zenodo_presigned_url
         end
       else
         render status: 403, plain: 'You are not authorized to download this file'
@@ -204,4 +200,3 @@ module StashEngine
 
   end
 end
-# rubocop:enable Metrics/ClassLength

@@ -31,7 +31,7 @@ module Stash
       # This takes an argument of the digests types you want returned as an array, see DIGEST_INITIALIZERS for types.  It returns
       # the zenodo response and the hexdigests for the types you specify
 
-      # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+      # rubocop:disable Metrics/MethodLength
       def stream(digest_types: [])
         digests_obj = Digests.new(digest_types: digest_types)
 
@@ -39,7 +39,8 @@ module Stash
         read_pipe.define_singleton_method(:rewind) { nil }
         write_pipe.binmode
 
-        http = HTTP.timeout(connect: 30, read: 60).timeout(6.hours.to_i).follow(max_hops: 10)
+        http = HTTP.use(normalize_uri: { normalizer: Stash::Download::NORMALIZER })
+          .timeout(connect: 30, read: 60).timeout(6.hours.to_i).follow(max_hops: 10)
         response = http.get(@file_model.zenodo_replication_url)
 
         put_response = nil
@@ -59,7 +60,7 @@ module Stash
 
         size = 0
         response.body.each do |chunk|
-          size += chunk.length
+          size += chunk.bytesize
           digests_obj.accumulate_digests(chunk: chunk)
           write_pipe.write(chunk)
         end
@@ -69,6 +70,7 @@ module Stash
 
         if size != response.headers['Content-Length'].to_i
           raise Stash::ZenodoReplicate::ZenodoError, "Size of http body doesn't match Content-Length for file:\n #{@file_model.class}," \
+            "\n cumulative_size: #{size}, Content-Length from server: #{response.headers['Content-Length']}" \
             "\n file_id: #{@file_model.id}, name: #{@file_model.upload_file_name}\n url: #{@file_model.url}"
         end
 
@@ -77,7 +79,7 @@ module Stash
         raise Stash::ZenodoReplicate::ZenodoError, "Error retrieving HTTP URL for duplication #{@file_model.zenodo_replication_url}\n" \
             "Original error: #{e}\n#{e.backtrace.join("\n")}"
       end
-      # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
+      # rubocop:enable Metrics/MethodLength
     end
   end
 end

@@ -22,44 +22,34 @@ StashEngine::Engine.routes.draw do
     resources :internal_data, shallow: true
   end
 
-  post 'curation_note/:id', to: 'curation_activity#curation_note', as: 'curation_note'
-  post 'curation_activity_change/:id', to: 'admin_datasets#curation_activity_change', as: 'curation_activity_change'
   resources :tenants, only: %i[index show]
-  resources :data_files, :software_files do
+  resources :data_files, :software_files, :supp_files do
     member do
-      patch 'remove'
-      patch 'remove_unuploaded'
-      patch 'restore'
-      patch 'destroy_error' # destroy an errored file in manifest upload
       patch 'destroy_manifest' # destroy file from manifest method
     end
   end
-
-
 
   resources :edit_histories, only: [:index]
 
   # these are weird and different and want to get rid of these with file redesign
   match 'data_file/validate_urls/:resource_id', to: 'data_files#validate_urls', as: 'data_file_validate_urls', via: %i[get post put]
   match 'software_file/validate_urls/:resource_id', to: 'software_files#validate_urls', as: 'software_file_validate_urls', via: %i[get post put]
+  match 'supp_file/validate_urls/:resource_id', to: 'supp_files#validate_urls', as: 'supp_file_validate_urls', via: %i[get post put]
 
   get 'data_file/presign_upload/:resource_id', to: 'data_files#presign_upload', as: 'data_file_presign_url'
   get 'software_file/presign_upload/:resource_id', to: 'software_files#presign_upload', as: 'software_file_presign_url'
+  get 'supp_file/presign_upload/:resource_id', to: 'supp_files#presign_upload', as: 'supp_file_presign_url'
 
   post 'data_file/upload_complete/:resource_id', to: 'data_files#upload_complete', as: 'data_file_complete'
   post 'software_file/upload_complete/:resource_id', to: 'software_files#upload_complete', as: 'software_file_complete'
-
-  resource :data_file do # TODO: this is wacky since it's using a resource id rather than a file id maybe this belongs in resource.
-    member do
-      patch 'revert'
-    end
-  end
+  post 'supp_file/upload_complete/:resource_id', to: 'supp_files#upload_complete', as: 'supp_file_complete'
 
   get 'dashboard', to: 'dashboard#show', as: 'dashboard'
   get 'ajax_wait', to: 'dashboard#ajax_wait', as: 'ajax_wait'
   get 'metadata_basics', to: 'dashboard#metadata_basics', as: 'metadata_basics'
   get 'preparing_to_submit', to: 'dashboard#preparing_to_submit', as: 'preparing_to_submit'
   get 'upload_basics', to: 'dashboard#upload_basics', as: 'upload_basics'
+  get 'react_basics', to: 'dashboard#react_basics', as: 'react_basics'
 
   # download related
   match 'downloads/download_resource/:resource_id', to: 'downloads#download_resource', as: 'download_resource', via: %i[get post]
@@ -131,10 +121,15 @@ StashEngine::Engine.routes.draw do
   get 'ds_admin/data_popup/:id', to: 'admin_datasets#data_popup'
   get 'ds_admin/note_popup/:id', to: 'admin_datasets#note_popup'
   get 'ds_admin/curation_activity_popup/:id', to: 'admin_datasets#curation_activity_popup'
-  get 'ds_admin/curation_activity_change/:id', to: 'admin_datasets#curation_activity_change'
+#  get 'ds_admin/curation_activity_change/:id', to: 'admin_datasets#curation_activity_change'
+  get 'ds_admin/current_editor_popup/:id', to: 'admin_datasets#current_editor_popup'
+#  get 'ds_admin/current_editor_change/:id', to: 'admin_datasets#current_editor_change'
   get 'ds_admin/activity_log/:id', to: 'admin_datasets#activity_log'
   get 'ds_admin/stats_popup/:id', to: 'admin_datasets#stats_popup'
-
+  post 'curation_note/:id', to: 'curation_activity#curation_note', as: 'curation_note'
+  post 'curation_activity_change/:id', to: 'admin_datasets#curation_activity_change', as: 'curation_activity_change'
+  post 'current_editor_change/:id', to: 'admin_datasets#current_editor_change', as: 'current_editor_change'
+  
   # routing for submission queue controller
   get 'submission_queue', to: 'submission_queue#index'
   get 'submission_queue/refresh_table', to: 'submission_queue#refresh_table'

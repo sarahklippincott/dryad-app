@@ -32,6 +32,8 @@ module Stash
 
       def upload_files(zenodo_bucket_url:)
         @file_change_list.upload_list.each do |upload|
+          next if upload.upload_file_size.nil? || upload.upload_file_size == 0
+
           streamer = Streamer.new(file_model: upload, zenodo_bucket_url: zenodo_bucket_url)
           digests = ['md5']
           digests.push(upload.digest_type) if upload.digest_type.present? && upload.digest.present?
@@ -56,7 +58,6 @@ module Stash
       end
 
       # contains response: and digest: keys
-      # rubocop:disable Metrics/AbcSize
       def check_digests(streamer_response:, file_model:)
         out = streamer_response
         upload = file_model
@@ -73,7 +74,7 @@ module Stash
         raise FileError, "Error #{upload.digest_type} digest doesn't match database value:\nCalculated:#{out[:digests][upload.digest_type]}\n" \
               "Database: #{upload.digest}"
       end
-      # rubocop:enable Metrics/AbcSize
+
     end
   end
 end

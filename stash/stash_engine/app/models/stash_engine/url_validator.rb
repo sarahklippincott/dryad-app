@@ -7,7 +7,7 @@ require 'byebug'
 # getting cert errors, maybe https://www.engineyard.com/blog/ruby-ssl-error-certificate-verify-failed fixes it ?
 
 module StashEngine
-  class UrlValidator # rubocop:disable Metrics/ClassLength
+  class UrlValidator
 
     attr_reader :mime_type, :size, :url, :status_code, :redirected_to, :filename
 
@@ -35,7 +35,7 @@ module StashEngine
     end
 
     # this method does the magic and checks the URL
-    def validate # rubocop:disable Metrics/MethodLength
+    def validate
       unless correctly_formatted_url?
         @status_code = 400 # bad request because the URL is malformed
         return false
@@ -68,8 +68,7 @@ module StashEngine
     def upload_attributes_from(translator:, resource:, association:)
       valid = validate
       upload_attributes = {
-        resource_id: resource.id,
-        url: url,
+        resource_id: resource.id, url: url,
         status_code: status_code,
         file_state: 'created',
         original_url: (translator.direct_download.nil? ? nil : @url),
@@ -79,7 +78,8 @@ module StashEngine
 
       # don't allow duplicate URLs that have already been put into this version this time
       # (duplicate indicated with 409 Conflict)
-      return upload_attributes.merge(status_code: 409) if resource.url_in_version?(association: 'generic_files', url: url)
+      return upload_attributes.merge(status_code: 409) \
+        if resource.url_in_version?(url: url, association: association)
 
       sanitized_filename = StashEngine::GenericFile
         .sanitize_file_name(UrlValidator

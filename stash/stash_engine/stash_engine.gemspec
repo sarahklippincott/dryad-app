@@ -19,7 +19,7 @@ require 'stash_engine/version'
 # travis or on new software installs intended for development or testing because add_development_dependency is weak sauce
 # for our uses.
 
-Gem::Specification.new do |s| # rubocop:disable Metrics/BlockLength
+Gem::Specification.new do |s|
   s.name        = 'stash_engine'
   s.version     = StashEngine::VERSION
   s.authors     = ['sfisher']
@@ -78,8 +78,6 @@ Gem::Specification.new do |s| # rubocop:disable Metrics/BlockLength
   s.add_development_dependency 'equivalent-xml', '~> 0.6', '>= 0.6.0'
   s.add_development_dependency 'mysql2', '~> 0.4'
   s.add_development_dependency 'nokogiri', '~> 1.8'
-  s.add_development_dependency 'rspec', '~> 3.5'
-  s.add_development_dependency 'rspec-rails', '~> 3.5'
   s.add_development_dependency 'simplecov', '~> 0.14'
   s.add_development_dependency 'simplecov-console', '~> 0.4'
   s.add_development_dependency 'webmock', '~> 3.0'
