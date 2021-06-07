@@ -73,6 +73,11 @@ class UploadFiles extends React.Component {
         this.setState({chosenFiles: transformed});
     }
 
+    // checks the file list if any files are pending and if so returns true (or false)
+    hasPendingFiles = () => {
+        return this.getPendingFiles().length > 0;
+    }
+
     addFilesHandler = (event, uploadType) => {
         this.setState({warningMessage: null});
         const newFiles = this.discardFilesAlreadyChosen([...event.target.files], uploadType);
@@ -432,13 +437,15 @@ class UploadFiles extends React.Component {
                             <img className="c-upload__spinner" src="../../../images/spinner.gif" alt="Loading spinner" />
                         </div> : null }
                     {this.state.warningMessage ? <WarningMessage message={this.state.warningMessage} /> : null}
-                    <ValidateFiles
-                        id='confirm_to_validate_files'
-                        buttonLabel='Upload pending files'
-                        checkConfirmed={true}
-                        disabled={this.state.submitButtonFilesDisabled}
-                        changed={this.toggleCheckedFiles}
-                        clicked={this.uploadFilesHandler} />
+                    {this.hasPendingFiles() ?
+                        <ValidateFiles
+                            id='confirm_to_validate_files'
+                            buttonLabel='Upload pending files'
+                            checkConfirmed={true}
+                            disabled={this.state.submitButtonFilesDisabled}
+                            changed={this.toggleCheckedFiles}
+                            clicked={this.uploadFilesHandler}/>
+                        : null}
                 </div>
             )
         } else {
@@ -484,7 +491,14 @@ class UploadFiles extends React.Component {
                         return <UploadType
                             key={upload_type.type}
                             changed={(event) => this.addFilesHandler(event, upload_type.type)}
-                            clicked={() => this.showModal(upload_type.type)}
+                            clicked={(event) => {
+                                if(event.target.id.includes('manifest')){
+                                    this.showModal(upload_type.type); // for manifest upload dialog
+                                }else{
+                                    // triggers change to reset file uploads to null before onChange to allow files to be added again
+                                    event.target.value = null;
+                                }
+                            } }
                             type={upload_type.type}
                             logo={upload_type.logo}
                             name={upload_type.name}
