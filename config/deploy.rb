@@ -24,7 +24,8 @@ append :linked_dirs,
        "tmp/sockets",
        "vendor/bundle",
        "public/system",
-       "uploads"
+       "uploads",
+       "stash/stash-notifier"
 
 # Default value for keep_releases is 5
 set :keep_releases, 5
@@ -32,6 +33,8 @@ set :keep_releases, 5
 namespace :deploy do
   before :compile_assets, "deploy:retrieve_master_key"
   after :deploy, "git:version"
+  after :deploy, "git:version"
+  after :deploy, "build_stash_engine:notifier"
   after :deploy, "cleanup:remove_example_configs"
 
   desc 'Retrieve master.key contents from SSM ParameterStore'
@@ -51,6 +54,15 @@ namespace :git do
     on roles(:app), wait: 1 do
       execute "touch #{release_path}/.version"
       execute "echo '#{fetch :version_number}' >> #{release_path}/.version"
+    end
+  end
+end
+
+namespace :build_stash_engine do
+  desc "run bundle install on all stash engine projects"
+  task :notifier do
+    on roles(:app), wait: 1 do
+      execute "cd #{deploy_to}/shared/stash/stash-notifier; bundle install --path=."
     end
   end
 end
