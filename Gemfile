@@ -63,6 +63,8 @@ gem 'restforce', '~> 2.5.3'
 gem 'stripe'
 gem 'wicked_pdf'
 gem 'wkhtmltopdf-binary'
+gem 'lograge'
+gem 'logstash-event'
 
 # #########################
 # Testing download examples
