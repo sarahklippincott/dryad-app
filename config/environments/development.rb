@@ -60,6 +60,7 @@ Rails.application.configure do
   # write a second log stream as json
   config.lograge.keep_original_rails_log = true
   config.lograge.logger = ActiveSupport::Logger.new "#{Rails.root}/log/lograge_#{Rails.env}.log"
+  config.lograge.formatter = Lograge::Formatters::Logstash.new
   
   Rails.application.default_url_options = { host: 'dryad-dev.cdlib.org' }
 
