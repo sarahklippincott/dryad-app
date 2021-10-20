@@ -25,7 +25,7 @@ Rails.application.configure do
   # config.active_storage.service = :local     
   
   # Print deprecation notices to the Rails logger.
-  config.active_support.deprecation = :log
+  #config.active_support.deprecation = :log
 
   # Raise an error on page load if there are pending migrations.
   config.active_record.migration_error = :page_load
@@ -36,7 +36,7 @@ Rails.application.configure do
   # Debug mode disables concatenation and preprocessing of assets.
   # This option may cause significant delays in view rendering with a large
   # number of complex assets.
-  config.assets.debug = true
+  #config.assets.debug = true
 
   # Asset digests allow you to set far-future HTTP expiration dates on all assets,
   # yet still be able to expire them through the digest params.
@@ -57,11 +57,22 @@ Rails.application.configure do
   # routes, locales, etc. This feature depends on the listen gem.
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker   
 
+  ##### Testing JSON Logging #####
+  #
+  # Use the lowest log level to ensure availability of diagnostic information
+  # when problems arise.
+  config.log_level = :info
+
+  # Prepend all log lines with the following tags.
+  config.log_tags = [ :request_id ]
+
   # write a second log stream as json
   config.lograge.enabled = true
   config.lograge.formatter = Lograge::Formatters::Logstash.new
-  config.lograge.keep_original_rails_log = true
-  config.lograge.logger = ActiveSupport::Logger.new "#{Rails.root}/log/lograge_#{Rails.env}.log"
+  #config.lograge.keep_original_rails_log = true
+  #config.lograge.logger = ActiveSupport::Logger.new "#{Rails.root}/log/lograge_#{Rails.env}.log"
+  #
+  ##### End Testing JSON Logging #####
   
   Rails.application.default_url_options = { host: 'dryad-dev.cdlib.org' }
 
