@@ -555,6 +555,27 @@ module StashDatacite
         end
       end
 
+      describe :data_readme do
+        before(:each) do
+          @resource.generic_files.each { |f| f.update(url: 'http://example.com') }
+        end
+
+        it 'requires a README file' do
+          warnings = completions.all_warnings
+          expect(warnings[0]).to include('README')
+
+          create(:data_file, resource: @resource, upload_file_name: 'README.txt', url: 'http://example.com')
+          warnings = completions.all_warnings
+          expect(warnings).to be_empty
+        end
+
+        it 'does not care about the file extension of a README' do
+          create(:data_file, resource: @resource, upload_file_name: 'README.bogus-extension', url: 'http://example.com')
+          warnings = completions.all_warnings
+          expect(warnings).to be_empty
+        end
+      end
+
       describe :all_warnings do
 
         before(:each) do

@@ -199,6 +199,10 @@ module StashDatacite
         TemporalCoverage.where(resource_id: @resource.id).count > 0
       end
 
+      def data_readme
+        @resource.data_files.where("upload_file_name LIKE 'README%'")
+      end
+
       def optional_completed
         date.to_i + keyword.to_i + method.to_i + has_related_works?.to_i
       end
@@ -232,6 +236,8 @@ module StashDatacite
             'Please re-upload the following files if you still see this error in a few minutes.'
           messages << "Files with upload errors: #{error_uploads.join(',')}"
         end
+
+        messages << 'Include a README file along with the data files' unless data_readme.present?
 
         { data_files: { name: 'data files', size_limit: APP_CONFIG.maximums.merritt_size },
           software_files: { name: 'software files', size_limit: APP_CONFIG.maximums.zenodo_size },
