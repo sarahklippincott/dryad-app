@@ -124,9 +124,14 @@ module StashDatacite
         found_dup
       end
 
-      # checks for existing data files, Dryad is a data repository and shouldn't be used only as a way to deposit in Zenodo
+      # Checks for existing data files, Dryad is a data repository and shouldn't be used only as a way to deposit in Zenodo
+      # There must be at least one file *other than* the README file.
       def contains_data?
-        @resource.data_files.present_files.count.positive?
+        @resource.data_files.present_files.where("UPPER(upload_file_name) NOT LIKE 'README%'").count.positive?
+      end
+
+      def data_readme
+        @resource.data_files.present_files.where("UPPER(upload_file_name) LIKE 'README%'")
       end
 
       def over_size?(limit:, file_list:)
@@ -199,10 +204,6 @@ module StashDatacite
         TemporalCoverage.where(resource_id: @resource.id).count > 0
       end
 
-      def data_readme
-        @resource.data_files.where("upload_file_name LIKE 'README%'")
-      end
-
       def optional_completed
         date.to_i + keyword.to_i + method.to_i + has_related_works?.to_i
       end
@@ -237,7 +238,11 @@ module StashDatacite
           messages << "Files with upload errors: #{error_uploads.join(',')}"
         end
 
+        messages << 'Include at least one data file in your submission' unless contains_data?
         messages << 'Include a README file along with the data files' unless data_readme.present?
+        if data_readme.present? && !data_readme.first.upload_file_name.start_with?('README')
+          messages << "For the README file, please capitalize the 'README' portion of the filename"
+        end
 
         { data_files: { name: 'data files', size_limit: APP_CONFIG.maximums.merritt_size },
           software_files: { name: 'software files', size_limit: APP_CONFIG.maximums.zenodo_size },
