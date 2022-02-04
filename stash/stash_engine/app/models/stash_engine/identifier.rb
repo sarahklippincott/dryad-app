@@ -523,7 +523,7 @@ module StashEngine
 
     def date_available_for_curation
       resources.map(&:curation_activities).flatten.each do |ca|
-        return ca.created_at if ca.submitted?
+        return ca.created_at if %w[submitted curation].include?(ca.status)
       end
       nil
     end
