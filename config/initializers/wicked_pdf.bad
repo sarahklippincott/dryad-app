@@ -24,6 +24,7 @@ class WickedPdf
         render_without_wicked_pdf(options, *args, &block)
       else
         super(options, *args, &block)
+        # super(options)
       end
     end
 

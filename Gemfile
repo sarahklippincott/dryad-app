@@ -7,9 +7,9 @@ require File.join(File.dirname(__FILE__), 'lib', 'bundler_help.rb')
 
 gem 'irb', '~> 1.3.7'
 gem 'mysql2', '~> 0.5.3'
-gem 'rails', '~> 5.2.6'
-gem 'react-rails', '~> 2.6.1'
-gem 'webpacker', '~> 5.4.0'
+gem 'rails', '~> 5.2.7'
+gem 'react-rails', '~> 2.6.2'
+gem 'webpacker', '~> 5.4.3'
 
 # ############################################################
 # Local engines
@@ -52,7 +52,6 @@ gem 'yui-compressor'
 # Misc
 
 gem 'amatch', '~> 0.4.0'
-gem 'blacklight', '~> 7.19.2'
 gem 'bootsnap', require: false
 gem 'bootstrap', '~> 4.0'
 gem 'datacite-mapping', '~> 0.4.1'
@@ -60,7 +59,7 @@ gem 'devise', '~> 4.8.0'
 gem 'devise-guests', '~> 0.6'
 gem 'doorkeeper', '~> 5.5'
 gem 'exception_notification'
-gem 'geoblacklight', '~> 3.4.0'
+gem 'geoblacklight', '~> 3.6.0'
 gem 'google-apis-gmail_v1', '~> 0.3'
 gem 'httparty', '~> 0.19.0'
 gem 'jbuilder'
@@ -79,7 +78,7 @@ gem 'solr_wrapper', '~> 3.1.2'
 gem 'sync', '~> 0.5.0'
 gem 'tins', '~> 1.29.1'
 gem 'twitter-typeahead-rails', '0.11.1.pre.corejavascript' # this is in a generator to install blacklight
-gem 'wicked_pdf', '~> 1.4.0'
+# gem 'wicked_pdf', '~> 2.1.0'
 gem 'wkhtmltopdf-binary'
 
 # #########################
