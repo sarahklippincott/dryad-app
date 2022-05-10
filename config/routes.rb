@@ -174,6 +174,7 @@ Rails.application.routes.draw do
         get 'up_code_manifest'
         get 'submission'
         get 'show_files'
+        patch 'import_type'
       end
     end
 
