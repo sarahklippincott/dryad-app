@@ -116,7 +116,7 @@
 <div class="bio">
   <img src="/images/nilsson.jpg" alt="Johan Nilsson" title="Johan Nilsson">
   <p>
-    <strong>Johan Nilsson (Class of 2022)</strong> works at the Oikos Editorial Office, a society-owned publishing foundation
+    <strong>Johan Nilsson (Ex Officio)</strong> works at the Oikos Editorial Office, a society-owned publishing foundation
     based at Lund University, Sweden. His main responsibilities are to manage the peer-review, production and marketing
     of one of their journals, Journal of Avian Biology. He also coordinates the society’s projects on open access, open
     data and public outreach. Johan has a background as a research scientist in evolutionary ecology and remain actively
@@ -173,6 +173,22 @@
 </div>
 
 <div class="bio">
+  <img src="/images/waibel.jpg" alt="Günter Waibel" title="Günter Waibel">
+  <p>
+    <strong>Günter Waibel (Ex Officio)</strong> is Associate Vice Provost and Executive Director of California Digital
+    Library, one of the world's largest digital research libraries. Collaborating with stakeholders across the UC system
+    and beyond, Waibel is advancing efforts to build and support new models of scholarly communication; provide leadership,
+    strategic planning, management and decision making for the CDL; and foster strategic partnerships at the state, national,
+    and international levels. Waibel brings extensive experience in the digital library and broader cultural heritage
+    communities and is well-known for his work in promoting cross-domain collaboration. In his previous position as the
+    Director of the Digitization Program Office at the Smithsonian Institution, Waibel oversaw the strategic plan for
+    creating a digital Smithsonian out of the institution’s 19 museums and 9 research centers. More at
+    <a href="http://www.linkedin.com/in/waibel" target="_blank" title="Günter's linked in profile (opens in a new window)">
+    Günter's linked in profile</a>
+  </p>
+</div>
+
+<div class="bio">
   <img src="/images/williams.jpg" alt="Jason Williams" title="Jason Williams">
   <p>
     <strong>Jason Williams (Class of 2023)</strong> is Assistant Director, External Collaborations at the
@@ -189,23 +205,6 @@
     of Science Fellow. Jason is also a teacher at the Yeshiva University High School for Girls.
   </p>
 </div>
-
-<div class="bio">
-  <img src="/images/waibel.jpg" alt="Günter Waibel" title="Günter Waibel">
-  <p>
-    <strong>Günter Waibel (Ex Officio)</strong> is Associate Vice Provost and Executive Director of California Digital
-    Library, one of the world's largest digital research libraries. Collaborating with stakeholders across the UC system
-    and beyond, Waibel is advancing efforts to build and support new models of scholarly communication; provide leadership,
-    strategic planning, management and decision making for the CDL; and foster strategic partnerships at the state, national,
-    and international levels. Waibel brings extensive experience in the digital library and broader cultural heritage
-    communities and is well-known for his work in promoting cross-domain collaboration. In his previous position as the
-    Director of the Digitization Program Office at the Smithsonian Institution, Waibel oversaw the strategic plan for
-    creating a digital Smithsonian out of the institution’s 19 museums and 9 research centers. More at
-    <a href="http://www.linkedin.com/in/waibel" target="_blank" title="Günter's linked in profile (opens in a new window)">
-    Günter's linked in profile</a>
-  </p>
-</div>
-
 
 <h2>Annual Reports</h2>
 
